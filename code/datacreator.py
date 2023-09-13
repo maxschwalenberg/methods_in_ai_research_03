@@ -8,6 +8,8 @@ class datacreator:
         self.lines = []
         self.labeled_data = []
 
+        self.dataset_created = False
+
     def openfile(self, filename):
         file = open(filename, "r")
         self.lines = file.readlines()
