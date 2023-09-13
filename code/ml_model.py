@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.linear_model import LogisticRegression
 from sklearn import tree
 
 from datacreator import datacreator
@@ -40,6 +41,22 @@ class DecisionTreeModel(MLModel):
 
     def fit(self):
         model = tree.DecisionTreeClassifier()
+        model.fit(self.x_train_encoded, self.datacreator_instance.y_train)
+
+        self.model = model
+
+    def predict(self):
+        preds = self.model.predict(self.x_test_encoded)
+
+        self.preds = preds
+
+
+class LogisticRegressionModel(MLModel):
+    def __init__(self, datacreator_instance: datacreator) -> None:
+        super().__init__(datacreator_instance)
+
+    def fit(self):
+        model = LogisticRegression()
         model.fit(self.x_train_encoded, self.datacreator_instance.y_train)
 
         self.model = model
