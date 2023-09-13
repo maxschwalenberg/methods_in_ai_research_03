@@ -2,8 +2,8 @@ import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn import tree
 
-from code.datacreator import datacreator
-from code.model import Model
+from datacreator import datacreator
+from model import Model
 
 
 class MLModel(Model):
