@@ -23,8 +23,7 @@ class datacreator:
         x = np.array(self.labeled_data)[:, 1]
         y = np.array(self.labeled_data)[:, 0]
 
-        x_train, x_test, y_train, y_test = train_test_split(
+        self.x_train, self.x_test, self.y_train, self.y_test = train_test_split(
             x, y, test_size=0.15, random_state=1
         )
-
-        return x_train, y_train, x_test, y_test
+        self.dataset_created = True
