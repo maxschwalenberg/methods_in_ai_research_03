@@ -2,7 +2,7 @@ from source.datacreator import datacreator
 from source.model import Model
 import json
 
-import keyboard
+# import keyboard
 
 
 talking = True
@@ -123,9 +123,9 @@ def majorityCounter(instance):
 
                  
    
-while talking == True:                                                     
-    input("What kind of utterance are you:")
-    print("This utterance is a " + str(majorityCounter(obj)))
-    if keyboard.is_pressed('esc'):
-        talking = False
-        break
+# while talking == True:                                                     
+#     input("What kind of utterance are you:")
+#     print("This utterance is a " + str(majorityCounter(obj)))
+#     if keyboard.is_pressed('esc'):
+#         talking = False
+#         break
