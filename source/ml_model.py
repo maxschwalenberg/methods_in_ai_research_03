@@ -3,8 +3,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn import tree
 
-from source.datacreator import datacreator
-from source.model import Model
+from datacreator import datacreator
+from model import Model
 
 
 class MLModel(Model):
