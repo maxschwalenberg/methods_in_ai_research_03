@@ -49,6 +49,8 @@ class DecisionTreeModel(MLModel):
         preds = self.model.predict(self.x_test_encoded)
 
         self.preds = preds
+        accuracy = preds == self.datacreator_instance.y_test
+        print(np.sum(accuracy) / len(preds))
 
 
 class LogisticRegressionModel(MLModel):
@@ -56,7 +58,7 @@ class LogisticRegressionModel(MLModel):
         super().__init__(datacreator_instance)
 
     def fit(self):
-        model = LogisticRegression()
+        model = LogisticRegression(max_iter=1000000)
         model.fit(self.x_train_encoded, self.datacreator_instance.y_train)
 
         self.model = model
@@ -65,3 +67,5 @@ class LogisticRegressionModel(MLModel):
         preds = self.model.predict(self.x_test_encoded)
 
         self.preds = preds
+        accuracy = preds == self.datacreator_instance.y_test
+        print(np.sum(accuracy) / len(preds))

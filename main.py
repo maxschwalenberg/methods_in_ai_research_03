@@ -1,12 +1,8 @@
 from source.datacreator import datacreator
 from source.baseline import RuleBasedBaseline
-from source.ml_model import DecisionTreeModel
-from source.ml_model2 import LogisticRegressionModel
-
-
+from source.ml_model import DecisionTreeModel, LogisticRegressionModel
 
 obj = datacreator(False)
-
 obj.openfile("data/dialog_acts.dat")
 
 obj.assignClass()
@@ -19,14 +15,15 @@ rule_based_baseline.test()
 
 #ML Model 1
 decision_tree = DecisionTreeModel(obj)
-decision_tree.create_bag_of_words()
-decision_tree.fit()
-decision_tree.predict()
-print(decision_tree.preds)
+# decision_tree.create_bag_of_words()
+# decision_tree.fit()
+# decision_tree.predict()
+
 
 #ML Model 2
 logistic_regression = LogisticRegressionModel(obj)
 logistic_regression.create_bag_of_words()
 logistic_regression.fit()
+logistic_regression.predict()
 
 #print(obj.x_train.shape)
