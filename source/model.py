@@ -1,4 +1,4 @@
-from datacreator import datacreator
+from source.datacreator import datacreator
 
 
 class Model:

@@ -1,0 +1,74 @@
+{
+  "rules":[
+      {
+      "intent": "ack",
+      "keywords": ["kay", "okay"]
+      },
+
+      {
+        "intent": "affirm",
+        "keywords": ["yes", "yea", "yeah"]
+      },
+
+      {
+        "intent": "thankyou",
+        "keywords": ["thank you"]
+      },
+
+      {
+        "intent": "bye",
+        "keywords": ["goodbye", "good bye", "bye"]
+      },
+
+      {
+        "intent": "confirm",
+        "keywords": ["is it", "is that", "does it"]
+      },
+
+      {
+        "intent": "deny",
+        "keywords": ["dont", "wrong", "not"]
+      },
+
+      {
+        "intent": "hello",
+        "keywords": ["hello", "hi"]
+      },
+
+      {
+      "intent": "inform",
+      "keywords": ["looking"]
+      },
+
+      {
+        "intent": "negate",
+        "keywords": ["no"]
+      },
+
+      {
+        "intent": "repeat",
+        "keywords": ["again", "repeat", "back"]
+      },
+
+      {
+        "intent": "reqalts",
+        "keywords": ["how about", "anything else"]
+      },
+
+      {
+        "intent": "reqmore",
+        "keywords": ["more"]
+      },
+
+      {
+        "intent": "request",
+        "keywords": ["postcode", "phone number", "address"]
+      },
+
+      {
+        "intent": "restart",
+        "keywords": ["start over", "reset", "start again"]
+      }
+
+  ]
+}
