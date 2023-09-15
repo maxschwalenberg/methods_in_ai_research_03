@@ -2,7 +2,7 @@
   "rules":[
       {
       "intent": "ack",
-      "keywords": ["kay", "okay"]
+      "keywords": ["kay", "okay", "thatll do", "fine"]
       },
 
       {
@@ -37,7 +37,11 @@
 
       {
       "intent": "inform",
-      "keywords": ["looking", "any", "restaurant"]
+      "keywords": ["looking", "any", "restaurant", 
+                    "cheap", "mediterranean", "matter", 
+                    "expensive", "food", "north", 
+                    "east", "south", "west", 
+                    "center", "dont care"]
       },
 
       {
@@ -62,7 +66,7 @@
 
       {
         "intent": "request",
-        "keywords": ["postcode", "phone number", "address"]
+        "keywords": ["postcode", "phone number", "address", "please", "what"]
       },
 
       {
