@@ -7,6 +7,8 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score
 
 from source.datacreator import datacreator
 from source.model import Model
+from source.datacreator import datacreator
+from source.model import Model
 
 
 class MLModel(Model):
