@@ -2,9 +2,11 @@ import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn import tree
+from sklearn.metrics import accuracy_score, precision_score, recall_score
 
-from datacreator import datacreator
-from model import Model
+
+from source.datacreator import datacreator
+from source.model import Model
 
 
 class MLModel(Model):
@@ -47,11 +49,49 @@ class DecisionTreeModel(MLModel):
 
     def predict(self):
         preds = self.model.predict(self.x_test_encoded)
-
         self.preds = preds
-        accuracy = preds == self.datacreator_instance.y_test
-        print(np.sum(accuracy) / len(preds))
+        return preds
 
+    def evaluate(self):
+        preds = self.predict()
+        accuracy = accuracy_score(self.datacreator_instance.y_test, preds)
+        precision = precision_score(
+            self.datacreator_instance.y_test, 
+            preds, 
+            average = "macro",
+            zero_division=0.0
+        )
+        recall = recall_score(
+        self.datacreator_instance.y_test,
+        preds,
+        average="macro",
+        zero_division=0.0
+    )
+        precision_perclass = precision_score(
+            self.datacreator_instance.y_test, 
+            preds, 
+            labels=np.unique(self.datacreator_instance.y_test),
+            average=None,
+            zero_division=0.0
+        )
+        recall_perclass = recall_score(
+            self.datacreator_instance.y_test,
+            preds,
+            labels=np.unique(self.datacreator_instance.y_test),
+            average=None,
+            zero_division=0.0
+        )
+
+        class_metrics = {
+            f"{label}": {
+                "Precision": precision_perclass[i],
+                "Recall": recall_perclass[i],
+            }
+            for i, label in enumerate(np.unique(self.datacreator_instance.y_test))
+        }
+
+        return accuracy, precision, recall, class_metrics
+    
 
 class LogisticRegressionModel(MLModel):
     def __init__(self, datacreator_instance: datacreator) -> None:
@@ -67,5 +107,45 @@ class LogisticRegressionModel(MLModel):
         preds = self.model.predict(self.x_test_encoded)
 
         self.preds = preds
-        accuracy = preds == self.datacreator_instance.y_test
-        print(np.sum(accuracy) / len(preds))
+        return preds
+    
+    def evaluate(self):
+        preds = self.predict()
+        accuracy = accuracy_score(self.datacreator_instance.y_test, preds)
+        precision = precision_score(
+            self.datacreator_instance.y_test, 
+            preds, 
+            average = "macro",
+            zero_division=0.0
+        )
+        recall = recall_score(
+        self.datacreator_instance.y_test,
+        preds,
+        average="macro",
+        zero_division=0.0
+    )
+        precision_perclass = precision_score(
+            self.datacreator_instance.y_test, 
+            preds, 
+            labels=np.unique(self.datacreator_instance.y_test),
+            average=None,
+            zero_division=0.0
+        )
+        recall_perclass = recall_score(
+            self.datacreator_instance.y_test,
+            preds,
+            labels=np.unique(self.datacreator_instance.y_test),
+            average=None,
+            zero_division=0.0
+        )
+
+        class_metrics = {
+            f"Class {label}": {
+                "Precision": precision_perclass[i],
+                "Recall": recall_perclass[i],
+            }
+            for i, label in enumerate(np.unique(self.datacreator_instance.y_test))
+        }
+
+        return accuracy, precision, recall, class_metrics
+    
