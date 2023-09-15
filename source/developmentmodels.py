@@ -1,9 +1,11 @@
-def show_results(model):
+def develop(model):
     model.create_bag_of_words()
     model.fit()
     model.predict()
     model.evaluate()
+    return model
 
+def show_results(model):
     print(f"{model.__class__.__name__}:")
     print("Accuracy:", model.accuracy)
     print("Precision:", model.precision)
