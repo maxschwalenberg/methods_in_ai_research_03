@@ -6,36 +6,71 @@ from source.model import Model
 
 
 class DialogManagement:
-    def __init__(self, classifier: Model) -> None:
+    def __init__(self, classifier: Model, debug=False) -> None:
         self.classifier = classifier
 
-        # TODO: set first state
-        self.current_state = "welcome"
+        self.current_state = Welcome()
+        self.know_preferences: dict = {}
 
-    def start_dialog(self):
-        while self.current_state != "goodbye":
-            classification_result = self.handle_current_state()
-            self.state_transition(classification_result)
+        # optionally enable debugging --> print classifications for each user input
+        self.debug = debug
 
-    def handle_current_state(self):
-        rules = {"welcome": "Hello, how can I help you?"}
+    def run_dialog(self):
+        while not isinstance(self.current_state, Goodbye):
+            new_state, classified_response = self.current_state.run(self.classifier)
+            self.current_state = new_state
 
-        # check current state and print predefined system utterance
-        # also receive the response of the user which is returned by the below function
-        user_res = self.make_utterance_and_request(rules[self.current_state])
-        classified_user_res = self.classify_user_utterance(user_res)
+            if self.debug:
+                print(f"Classified `{classified_response}`")
 
-        return classified_user_res
+        # run the goodbye state
+        self.current_state.run()
 
-    def state_transition(self, classification_result: str):
-        if self.current_state == "welcome":
-            if classification_result == "ack":
-                self.current_state = "request_area"
 
-    def classify_user_utterance(self, user_utteranec: str):
-        # return the classification result of the users utterance
-        return self.classifier.predict_single_sentence(user_utteranec)
+class State:
+    def run(self, classifier: Model):
+        user_response = self.dialog()
+        classified_response = classifier.predict_single_sentence(user_response)
 
-    def make_utterance_and_request(self, utterance_string: str):
-        user_answer = input(utterance_string)
-        return user_answer
+        new_state = self.transition(classified_response)
+
+        return new_state, classified_response
+
+    def dialog(self):
+        user_utterance = input("User: ")
+        return user_utterance
+
+    def transition(self, input):
+        pass
+
+
+class Welcome(State):
+    def dialog(self):
+        print("System: Hello, how can I help you?")
+        user_utterance = super().dialog()
+
+        return user_utterance
+
+    def transition(self, input):
+        if input == "bye":
+            return Goodbye()
+
+
+class AskPrice(State):
+    def dialog(self):
+        print("System: How expensive should the restarant be?")
+        user_utterance = super().dialog()
+
+        return user_utterance
+
+    def transition(self, input):
+        if input == "inform":
+            return AskPrice()
+
+
+class Goodbye(State):
+    def dialog(self):
+        print("System: Goodbye, have a nice day!")
+
+    def run(self):
+        self.dialog()

@@ -115,11 +115,3 @@ def majorityCounter(instance):
     majority = max(dictionary, key=dictionary.get)
 
     return majority
-
-
-# while talking == True:
-#     input("What kind of utterance are you:")
-#     print("This utterance is a " + str(majorityCounter(obj)))
-#     if keyboard.is_pressed('esc'):
-#         talking = False
-#

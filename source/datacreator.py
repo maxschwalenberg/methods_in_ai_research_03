@@ -15,7 +15,8 @@ class datacreator:
         self.lines = file.readlines()
 
     def assignClass(self):
-        if self.remove_duplicate: self.lines = set(self.lines)
+        if self.remove_duplicate:
+            self.lines = set(self.lines)
         for line in self.lines:
             label, text = (line.split(" ")[0], line.split(" ")[1:])
             text = " ".join(text)

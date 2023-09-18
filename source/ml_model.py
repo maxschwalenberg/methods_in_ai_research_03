@@ -21,6 +21,7 @@ class MLModel(Model):
                     (datacreator_instance.x_train, datacreator_instance.x_test)
                 )
             )
+            self.vectorizer = vectorizer
 
             x_concatenated = bag.toarray()
 
@@ -33,6 +34,14 @@ class MLModel(Model):
 
         else:
             raise Exception("The dataset has not been created yet!")
+
+    def predict_single_sentence(self, user_input: str):
+        # encode the normal string into bag of words
+        encoded_user_input = self.vectorizer.transform([user_input])
+        # predicted encoded sentence
+        pred = self.model.predict(encoded_user_input)
+
+        return pred[0]
 
 
 class DecisionTreeModel(MLModel):
