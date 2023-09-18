@@ -22,7 +22,3 @@ class RestaurantLookup:
             ]
 
         return result_df
-
-
-db = RestaurantLookup("data/restaurant_info.csv")
-db.lookup({"Food": "spanish", "Area": "east"})
