@@ -3,7 +3,6 @@ from source.datacreator import datacreator
 import numpy as np
 
 
-
 class Model:
     def __init__(self, datacreator_instance: datacreator) -> None:
         self.datacreator_instance = datacreator_instance
@@ -12,34 +11,37 @@ class Model:
     def predict(self):
         self.preds = self.model.predict(self.x_test_encoded)
 
+    def predict_single_sentence(self, user_input: str):
+        pass
+
     def evaluate(self):
         self.accuracy = accuracy_score(self.datacreator_instance.y_test, self.preds)
         self.precision = precision_score(
-            self.datacreator_instance.y_test, 
-            self.preds, 
-            average = "macro",
-            zero_division=0.0
+            self.datacreator_instance.y_test,
+            self.preds,
+            average="macro",
+            zero_division=0.0,
         )
         self.recall = recall_score(
-        self.datacreator_instance.y_test,
-        self.preds,
-        average="macro",
-        zero_division=0.0
-        )        
+            self.datacreator_instance.y_test,
+            self.preds,
+            average="macro",
+            zero_division=0.0,
+        )
 
         precision_perclass = precision_score(
-            self.datacreator_instance.y_test, 
-            self.preds, 
+            self.datacreator_instance.y_test,
+            self.preds,
             labels=np.unique(self.datacreator_instance.y_test),
             average=None,
-            zero_division=0.0
+            zero_division=0.0,
         )
         recall_perclass = recall_score(
             self.datacreator_instance.y_test,
             self.preds,
             labels=np.unique(self.datacreator_instance.y_test),
             average=None,
-            zero_division=0.0
+            zero_division=0.0,
         )
 
         self.class_metrics = {
@@ -49,5 +51,3 @@ class Model:
             }
             for i, label in enumerate(np.unique(self.datacreator_instance.y_test))
         }
-    
-      

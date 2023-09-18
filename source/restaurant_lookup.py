@@ -4,7 +4,6 @@ import pandas as pd
 class RestaurantLookup:
     def __init__(self, restaurant_info_csv_path: str) -> None:
         self.data = pd.read_csv(restaurant_info_csv_path)
-        self.transform_column_names()
 
     def lookup(self, preferences: dict) -> pd.DataFrame:
         data_columns = self.data.columns.tolist()
