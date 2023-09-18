@@ -4,13 +4,9 @@ import pandas as pd
 class RestaurantLookup:
     def __init__(self, restaurant_info_csv_path: str) -> None:
         self.data = pd.read_csv(restaurant_info_csv_path)
+        self.transform_column_names()
 
-        print(self.data)
-
-    def transform_column_names(self):
-        pass
-
-    def lookup(self, preferences: dict):
+    def lookup(self, preferences: dict) -> pd.DataFrame:
         data_columns = self.data.columns.tolist()
         preferences_keys = list(preferences.keys())
 
@@ -19,17 +15,14 @@ class RestaurantLookup:
         for preference_key in preferences_keys:
             assert preference_key in data_columns
 
-        # create the lookup query
-        query = ""
-        query += f"{preferences_keys[0]} == `{preferences[preferences_keys[0]]}`"
+        result_df = self.data
+        for preference_key in preferences_keys:
+            result_df = result_df.loc[
+                result_df[preference_key] == preferences[preference_key]
+            ]
 
-        for preference_key in preferences_keys[1:]:
-            query += f" and {preference_key} == `{preferences[preference_key]}`"
-
-        print(query)
-        self.data["food"]
-        self.data.query("Area == west")
+        return result_df
 
 
 db = RestaurantLookup("data/restaurant_info.csv")
-db.lookup({"food": "spanish", "area": "west"})
+db.lookup({"Food": "spanish", "Area": "east"})
