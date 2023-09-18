@@ -2,6 +2,7 @@ import csv
 import random
 
 from source.model import Model
+from source.restaurant_lookup import RestaurantLookup
 
 # TODO
 # 1. create a rules dict what the system says in each state
@@ -15,10 +16,12 @@ class DialogManagement:
         self.current_state = Welcome()
         self.know_preferences: dict = {}
         self.know_preferences = {
-            "area": "west",      
-            "pricerange": "moderate",  
-            "type": "british"   
+            "area": "west",
+            "pricerange": "moderate",
+            "type": "british",
         }
+
+        self.restaurant_lookup = RestaurantLookup("data/restaurant_info.csv")
 
         # optionally enable debugging --> print classifications for each user input
         self.debug = debug
@@ -73,6 +76,7 @@ class Welcome(State):
             # return AskPrice() in the default case
             return AskPrice()
 
+
 class AskArea(State):
     def dialog(self):
         print("System: Which area do you want to go?")
@@ -107,7 +111,8 @@ class AskType(State):
     def transition(self, input):
         if input == "inform":
             return Suggestion()
-        
+
+
 class Suggestion(State):
     def getRestaurant(self):
         # Open Database
@@ -118,10 +123,13 @@ class Suggestion(State):
         # Search restaurants according to the preference
         filtered_restaurants = []
         for restaurant in restaurants:
-            if (restaurant["area"] == self.know_preferences["area"] and restaurant["pricerange"] == self.know_preferences["pricerange"] and
-            restaurant["food"] == self.know_preferences["type"]):
+            if (
+                restaurant["area"] == self.know_preferences["area"]
+                and restaurant["pricerange"] == self.know_preferences["pricerange"]
+                and restaurant["food"] == self.know_preferences["type"]
+            ):
                 filtered_restaurants.append(restaurant)
-        
+
         # Pick a random restaurant from the list
         if filtered_restaurants:
             selected_restaurant = random.choice(filtered_restaurants)
@@ -132,10 +140,14 @@ class Suggestion(State):
 
     def dialog(self):
         restaurant = self.getRestaurant()
-        if (restaurant == "None"):
+        if restaurant == "None":
             print("System: There are no restaurants according to your preferences.")
         else:
-            print("System: The best restaurant according to your preferences is this ", restaurant, ".")
+            print(
+                "System: The best restaurant according to your preferences is this ",
+                restaurant,
+                ".",
+            )
         user_utterance = super().dialog()
 
         return user_utterance
@@ -143,6 +155,7 @@ class Suggestion(State):
     def transition(self, input):
         if input == "inform":
             return Suggestion()
+
 
 class Goodbye(State):
     def dialog(self):

@@ -34,5 +34,5 @@ print(f"sentence `{ex_sentence}` --> {pred}")
 
 
 # create the dialog
-dialog_system = DialogManagement(logistic_regression)
+dialog_system = DialogManagement(logistic_regression, debug=True)
 dialog_system.run_dialog()
