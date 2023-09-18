@@ -55,10 +55,20 @@ class Welcome(State):
         if input == "bye":
             return Goodbye()
 
+        elif input == "inform":
+            # what do we do if the user already gives us information?
+
+            # return None for now, which will result in an error
+            return None
+
+        else:
+            # return AskPrice() in the default case
+            return AskPrice()
+
 
 class AskPrice(State):
     def dialog(self):
-        print("System: How expensive should the restarant be?")
+        print("System: How expensive should the restaurant be?")
         user_utterance = super().dialog()
 
         return user_utterance
