@@ -1,4 +1,6 @@
 import pandas as pd
+import random
+
 
 
 class RestaurantLookup:
@@ -19,5 +21,6 @@ class RestaurantLookup:
             result_df = result_df.loc[
                 result_df[preference_key] == preferences[preference_key]
             ]
+            # selected_restaurant = random.choice(filtered_restaurants)
 
         return result_df
