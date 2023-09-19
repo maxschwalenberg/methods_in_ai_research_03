@@ -1,3 +1,6 @@
+import csv
+import random
+
 from source.model import Model
 
 # TODO
@@ -11,6 +14,11 @@ class DialogManagement:
 
         self.current_state = Welcome()
         self.know_preferences: dict = {}
+        self.know_preferences = {
+            "area": "west",      
+            "pricerange": "moderate",  
+            "type": "british"   
+        }
 
         # optionally enable debugging --> print classifications for each user input
         self.debug = debug
@@ -65,6 +73,17 @@ class Welcome(State):
             # return AskPrice() in the default case
             return AskPrice()
 
+class AskArea(State):
+    def dialog(self):
+        print("System: Which area do you want to go?")
+        user_utterance = super().dialog()
+
+        return user_utterance
+
+    def transition(self, input):
+        if input == "inform":
+            return AskPrice()
+
 
 class AskPrice(State):
     def dialog(self):
@@ -75,8 +94,55 @@ class AskPrice(State):
 
     def transition(self, input):
         if input == "inform":
-            return AskPrice()
+            return AskType()
 
+
+class AskType(State):
+    def dialog(self):
+        print("System: How expensive should the restaurant be?")
+        user_utterance = super().dialog()
+
+        return user_utterance
+
+    def transition(self, input):
+        if input == "inform":
+            return Suggestion()
+        
+class Suggestion(State):
+    def getRestaurant(self):
+        # Open Database
+        with open("restaurant_info.csv", newline="") as csvfile:
+            reader = csv.DictReader(csvfile)
+            restaurants = list(reader)
+
+        # Search restaurants according to the preference
+        filtered_restaurants = []
+        for restaurant in restaurants:
+            if (restaurant["area"] == self.know_preferences["area"] and restaurant["pricerange"] == self.know_preferences["pricerange"] and
+            restaurant["food"] == self.know_preferences["type"]):
+                filtered_restaurants.append(restaurant)
+        
+        # Pick a random restaurant from the list
+        if filtered_restaurants:
+            selected_restaurant = random.choice(filtered_restaurants)
+            restaurant_name = selected_restaurant["restaurantname"]
+        else:
+            restaurant_name = "None"
+        return restaurant_name
+
+    def dialog(self):
+        restaurant = self.getRestaurant()
+        if (restaurant == "None"):
+            print("System: There are no restaurants according to your preferences.")
+        else:
+            print("System: The best restaurant according to your preferences is this ", restaurant, ".")
+        user_utterance = super().dialog()
+
+        return user_utterance
+
+    def transition(self, input):
+        if input == "inform":
+            return Suggestion()
 
 class Goodbye(State):
     def dialog(self):
