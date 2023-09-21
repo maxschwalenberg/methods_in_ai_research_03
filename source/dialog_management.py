@@ -1,5 +1,7 @@
 import csv
 import random
+import re
+from Levenshtein import distance as levdistance
 
 from source.model import Model
 from source.restaurant_lookup import RestaurantLookup
@@ -13,24 +15,36 @@ class DialogManagement:
     def __init__(self, classifier: Model, debug=False) -> None:
         self.classifier = classifier
 
-        self.current_state = Welcome()
         self.know_preferences: dict = {}
         self.know_preferences = {
             "area": "west",
             "pricerange": "moderate",
-            "type": "british",
+            "food": "british",
         }
 
-        self.restaurant_lookup = RestaurantLookup("data/restaurant_info.csv")
+        filename = "data/restaurant_info.csv"
+        self.restaurant_lookup = RestaurantLookup(filename)
+        self.fetchKeywords(filename)
+        self.current_state = Welcome(self.keyword_dict)
 
         # optionally enable debugging --> print classifications for each user input
         self.debug = debug
 
     def run_dialog(self):
         while not isinstance(self.current_state, Goodbye):
-            new_state, classified_response = self.current_state.run(self.classifier)
+            (
+                new_state,
+                classified_response,
+                extracted_preferences,
+            ) = self.current_state.run(self.classifier)
             self.current_state = new_state
-            #if the user denies, we should maintain the current state
+
+            # overwrite known preferences with new ones if there are any
+
+            for preference_key in extracted_preferences:
+                self.know_preferences[preference_key] = extracted_preferences[
+                    preference_key
+                ]
 
             if self.debug:
                 print(f"Classified `{classified_response}`")
@@ -38,19 +52,58 @@ class DialogManagement:
         # run the goodbye state
         self.current_state.run()
 
+    def fetchKeywords(self, filename):
+        file = open(filename)
+        file = csv.DictReader(file)
+        keyword_names = file.fieldnames[1:4]
+        keyword_dict = {key: set() for key in keyword_names}
+
+        for row in file:
+            for keyword in keyword_names:
+                if (row[keyword]) != "":
+                    keyword_dict[keyword].add(row[keyword])
+
+        self.keyword_dict = keyword_dict
+
+
+def patternMatchKeywordExtraction(data, keyword_dict):
+    data = data.lower()
+    temp = None
+    result = {}
+    if temp := re.findall("(\w+) food", data):
+        result["food"] = temp[0]
+        # result.append(("food", temp[0]))
+    if temp := re.findall("in the (\w+)", data):
+        result["area"] = temp[0]
+        # result.append(("area", temp[0]))
+    if temp := re.findall("(\w+) priced", data):
+        # result.append(("pricerange", temp[0]))
+        result["pricerange"] = temp[0]
+
+    if temp := re.findall("(\w+) restaurant", data):
+        for key, values in keyword_dict.items():
+            for value in values:
+                if levdistance(temp[0], value) <= 2:
+                    result[key] = value
+
+    return result
+
 
 class State:
+    def __init__(self, keyword_dict) -> None:
+        self.keyword_dict = keyword_dict
+        self.extracted_preferences: dict = {}
+
     def run(self, classifier: Model):
-        user_response = self.dialog()
-        classified_response = classifier.predict_single_sentence(user_response)
+        self.dialog()
+        classified_response = classifier.predict_single_sentence(self.user_utterance)
 
-        new_state = self.transition(classified_response)
+        new_state, extracted_preferences = self.transition(classified_response)
 
-        return new_state, classified_response
+        return new_state, classified_response, extracted_preferences
 
     def dialog(self):
-        user_utterance = input("User: ")
-        return user_utterance
+        self.user_utterance = input("User: ")
 
     def transition(self, input):
         # if user wants to start over, it does not matter which is the current state
@@ -64,6 +117,9 @@ class State:
 
 
 class Welcome(State):
+    def __init__(self, keyword_dict) -> None:
+        super().__init__(keyword_dict)
+
     def dialog(self):
         print("System: Hello, how can I help you?")
         user_utterance = super().dialog()
@@ -71,22 +127,41 @@ class Welcome(State):
         return user_utterance
 
     def transition(self, input):
+        extracted_preferences = {}
+
         if input == "bye":
-            return Goodbye()
+            return Goodbye(self.keyword_dict)
 
         elif input == "inform":
             # what do we do if the user already gives us information?
-
 
             # return None for now, which will result in an error
             return None
 
         else:
             # return AskPrice() in the default case
-            return AskArea()
+            return AskArea(self.keyword_dict), extracted_preferences
+
+
+class AskForInformation(State):
+    def __init__(self, keyword_dict) -> None:
+        super().__init__(keyword_dict)
+
+    def dialog(self):
+        user_utterance = "temporary string"
+
+        return user_utterance
+
+    def transition(self, input):
+        # analyze preferences and route accordingly
+
+        pass
 
 
 class AskArea(State):
+    def __init__(self, keyword_dict) -> None:
+        super().__init__(keyword_dict)
+
     def dialog(self):
         print("System: Which area do you want to go?")
         user_utterance = super().dialog()
@@ -95,10 +170,17 @@ class AskArea(State):
 
     def transition(self, input):
         if input == "inform":
-            return AskPrice()
+            # extract preferences
+            self.extracted_preferences = patternMatchKeywordExtraction(
+                self.user_utterance, self.keyword_dict
+            )
+            return AskForInformation(self.keyword_dict), self.extracted_preferences
 
 
 class AskPrice(State):
+    def __init__(self, keyword_dict) -> None:
+        super().__init__(keyword_dict)
+
     def dialog(self):
         print("System: How expensive should the restaurant be?")
         user_utterance = super().dialog()
@@ -107,10 +189,13 @@ class AskPrice(State):
 
     def transition(self, input):
         if input == "inform":
-            return AskType()
+            return AskType(self.keyword_dict)
 
 
 class AskType(State):
+    def __init__(self, keyword_dict) -> None:
+        super().__init__(keyword_dict)
+
     def dialog(self):
         print("System: How expensive should the restaurant be?")
         user_utterance = super().dialog()
@@ -119,34 +204,42 @@ class AskType(State):
 
     def transition(self, input):
         if input == "inform":
-            return Suggestion()
+            return Suggestion(self.keyword_dict)
 
 
 class Suggestion(State):
+    def __init__(self, keyword_dict) -> None:
+        super().__init__(keyword_dict)
 
     def dialog(self):
         print(
-                "System: The best restaurant according to your preferences is this ",
-                "---",
-                ".",
-            )
+            "System: The best restaurant according to your preferences is this ",
+            "---",
+            ".",
+        )
         user_utterance = super().dialog()
 
         return user_utterance
 
     def transition(self, input):
-        # after the suggestion it can negate/ back to ask again for parameters | it can ask for alternative 
+        # after the suggestion it can negate/ back to ask again for parameters | it can ask for alternative
         # it can say by | it can confirm
         if input == "negate":
-            return Welcome()
-        elif input == "reqalts" or input == "reqmore": 
-            return Suggestion() #if the user does not like the suggestion which is the next state?
+            return Welcome(self.keyword_dict)
+        elif input == "reqalts" or input == "reqmore":
+            return Suggestion(
+                self.keyword_dict
+            )  # if the user does not like the suggestion which is the next state?
         elif input == "thankyou":
-            return Goodbye()
+            return Goodbye(self.keyword_dict)
         elif input == "affirm" or input == "request":
-            return GiveDetails()
+            return GiveDetails(self.keyword_dict)
+
 
 class GiveDetails(State):
+    def __init__(self, keyword_dict) -> None:
+        super().__init__(keyword_dict)
+
     def dialog(self):
         print("Details: Address and Phone")
         # should we get the restaurant that we recommended to accesss to it details,
@@ -157,11 +250,15 @@ class GiveDetails(State):
 
     def transition(self, input):
         if input == "thankyou":
-            return Goodbye()
+            return Goodbye(self.keyword_dict)
         elif input == "negate":
-            return Suggestion
+            return Suggestion(self.keyword_dict)
+
 
 class Goodbye(State):
+    def __init__(self, keyword_dict) -> None:
+        super().__init__(keyword_dict)
+
     def dialog(self):
         print("System: Goodbye, have a nice day!")
 

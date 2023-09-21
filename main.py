@@ -18,9 +18,9 @@ filename2 = "data/baseline_rules.json"
 rule_based_baseline.loadRulesFile(filename2)
 rule_based_baseline.evaluate()
 
-# ML Model 1
+"""# ML Model 1
 decision_tree = develop(DecisionTreeModel(obj))
-# show_results(decision_tree)
+# show_results(decision_tree)"""
 
 # ML Model 2
 logistic_regression = develop(LogisticRegressionModel(obj))
