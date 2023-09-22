@@ -183,6 +183,8 @@ class AskArea(State):
                 self.user_utterance, self.keyword_dict
             )
             return AskForInformation(self.keyword_dict), self.extracted_preferences
+        else:
+            return AskForInformation(self.keyword_dict), self.extracted_preferences
 
 
 class AskPrice(State):
@@ -208,6 +210,8 @@ class AskPrice(State):
                 self.user_utterance, self.keyword_dict
             )
             return AskForInformation(self.keyword_dict), self.extracted_preferences
+        else:
+            return AskForInformation(self.keyword_dict), self.extracted_preferences
 
 
 class AskType(State):
@@ -232,6 +236,8 @@ class AskType(State):
             self.extracted_preferences = patternMatchKeywordExtraction(
                 self.user_utterance, self.keyword_dict
             )
+            return AskForInformation(self.keyword_dict), self.extracted_preferences
+        else:
             return AskForInformation(self.keyword_dict), self.extracted_preferences
 
 
