@@ -128,19 +128,16 @@ class Welcome(State):
 
     def transition(self, input):
         extracted_preferences = {}
-        if input == "restart":
+        if input == "restart" or input == "repeat":
             return Welcome(self.keyword_dict), extracted_preferences
         elif input == "bye":
             return Goodbye(self.keyword_dict), extracted_preferences
-        elif input == "inform":
-            # what do we do if the user already gives us information?
-
-            # return None for now, which will result in an error
-            return None
-
-        else:
-            # return AskPrice() in the default case
-            return AskArea(self.keyword_dict), extracted_preferences
+        elif input == "inform" or input == "hello":
+            # extract preferences
+            self.extracted_preferences = patternMatchKeywordExtraction(
+                self.user_utterance, self.keyword_dict
+            )
+            return AskForInformation(self.keyword_dict), self.extracted_preferences
 
 
 class AskForInformation(State):
@@ -178,6 +175,8 @@ class AskArea(State):
             return Welcome(self.keyword_dict), self.extracted_preferences
         elif input == "bye":
             return Goodbye(self.keyword_dict), self.extracted_preferences
+        elif input == "negate" or input == "repeat": # if the user negate the ask, we should ask again
+            return AskArea(self.keyword_dict), self.extracted_preferences
         elif input == "inform":
             # extract preferences
             self.extracted_preferences = patternMatchKeywordExtraction(
@@ -201,6 +200,8 @@ class AskPrice(State):
             return Welcome(self.keyword_dict), self.extracted_preferences
         elif input == "bye":
             return Goodbye(self.keyword_dict), self.extracted_preferences
+        elif input == "negate" or input == "repeat": # if the user negate the ask, we should ask again
+            return AskPrice(self.keyword_dict), self.extracted_preferences
         elif input == "inform":
             # extract preferences
             self.extracted_preferences = patternMatchKeywordExtraction(
@@ -224,6 +225,8 @@ class AskType(State):
             return Welcome(self.keyword_dict), self.extracted_preferences
         elif input == "bye":
             return Goodbye(self.keyword_dict), self.extracted_preferences
+        elif input == "negate" or input == "negate": # if the user negate the ask, we should ask again
+            return AskType(self.keyword_dict), self.extracted_preferences
         elif input == "inform":
             # extract preferences
             self.extracted_preferences = patternMatchKeywordExtraction(
@@ -251,17 +254,15 @@ class Suggestion(State):
         # it can say by | it can confirm
         if input == "restart":
             return Welcome(self.keyword_dict), self.extracted_preferences
-        elif input == "bye":
+        elif input == "bye" or input == "thankyou":
             return Goodbye(self.keyword_dict), self.extracted_preferences
         elif input == "negate":
             return Welcome(self.keyword_dict)
-        elif input == "reqalts" or input == "reqmore":
+        elif input == "reqalts" or input == "reqmore" or input == "repeat" or input == "deny":
             return Suggestion(
                 self.keyword_dict
             )  # if the user does not like the suggestion which is the next state?
-        elif input == "thankyou":
-            return Goodbye(self.keyword_dict)
-        elif input == "affirm" or input == "request":
+        elif input == "affirm" or input == "request" or input == "ack" or input == "confirm":
             return GiveDetails(self.keyword_dict)
 
 
@@ -280,11 +281,11 @@ class GiveDetails(State):
     def transition(self, input):
         if input == "restart":
             return Welcome(self.keyword_dict), self.extracted_preferences
-        elif input == "bye":
+        elif input == "bye" or input == "thankyou" or input == "ack" or input == "confirm" or input == "affirm":
             return Goodbye(self.keyword_dict), self.extracted_preferences
-        elif input == "thankyou":
-            return Goodbye(self.keyword_dict)
-        elif input == "negate":
+        elif input == "repeat":
+            return GiveDetails(self.keyword_dict)
+        elif input == "negate" or input == "reqalts":
             return Suggestion(self.keyword_dict)
 
 
