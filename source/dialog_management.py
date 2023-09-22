@@ -108,12 +108,12 @@ class State:
     def transition(self, input):
         # if user wants to start over, it does not matter which is the current state
         # the same with bye
-        if input == "restart":
-            return Welcome()
-        elif input == "bye":
-            return Goodbye()
-        else:
-            pass
+        #if input == "restart":
+         #   return Welcome()
+        #elif input == "bye":
+         #   return Goodbye()
+        #else:
+        pass
 
 
 class Welcome(State):
@@ -128,10 +128,10 @@ class Welcome(State):
 
     def transition(self, input):
         extracted_preferences = {}
-
-        if input == "bye":
-            return Goodbye(self.keyword_dict)
-
+        if input == "restart":
+            return Welcome(self.keyword_dict), extracted_preferences
+        elif input == "bye":
+            return Goodbye(self.keyword_dict), extracted_preferences
         elif input == "inform":
             # what do we do if the user already gives us information?
 
@@ -154,9 +154,14 @@ class AskForInformation(State):
 
     def transition(self, input):
         # analyze preferences and route accordingly
-
-        pass
-
+        if self.extracted_preferences["area"] == None:
+            return AskArea(self.keyword_dict), self.extracted_preferences
+        elif self.extracted_preferences["princerange"] == None:
+            return AskPrice(self.keyword_dict), self.extracted_preferences
+        elif self.extracted_preferences["food"] == None:
+            return AskType(self.keyword_dict), self.extracted_preferences
+        else: #everything is filled
+            return Suggestion (self.keyword_dict), self.extracted_preferences
 
 class AskArea(State):
     def __init__(self, keyword_dict) -> None:
@@ -169,7 +174,11 @@ class AskArea(State):
         return user_utterance
 
     def transition(self, input):
-        if input == "inform":
+        if input == "restart":
+            return Welcome(self.keyword_dict), self.extracted_preferences
+        elif input == "bye":
+            return Goodbye(self.keyword_dict), self.extracted_preferences
+        elif input == "inform":
             # extract preferences
             self.extracted_preferences = patternMatchKeywordExtraction(
                 self.user_utterance, self.keyword_dict
@@ -188,8 +197,16 @@ class AskPrice(State):
         return user_utterance
 
     def transition(self, input):
-        if input == "inform":
-            return AskType(self.keyword_dict)
+        if input == "restart":
+            return Welcome(self.keyword_dict), self.extracted_preferences
+        elif input == "bye":
+            return Goodbye(self.keyword_dict), self.extracted_preferences
+        elif input == "inform":
+            # extract preferences
+            self.extracted_preferences = patternMatchKeywordExtraction(
+                self.user_utterance, self.keyword_dict
+            )
+            return AskForInformation(self.keyword_dict), self.extracted_preferences
 
 
 class AskType(State):
@@ -203,8 +220,16 @@ class AskType(State):
         return user_utterance
 
     def transition(self, input):
-        if input == "inform":
-            return Suggestion(self.keyword_dict)
+        if input == "restart":
+            return Welcome(self.keyword_dict), self.extracted_preferences
+        elif input == "bye":
+            return Goodbye(self.keyword_dict), self.extracted_preferences
+        elif input == "inform":
+            # extract preferences
+            self.extracted_preferences = patternMatchKeywordExtraction(
+                self.user_utterance, self.keyword_dict
+            )
+            return AskForInformation(self.keyword_dict), self.extracted_preferences
 
 
 class Suggestion(State):
@@ -224,7 +249,11 @@ class Suggestion(State):
     def transition(self, input):
         # after the suggestion it can negate/ back to ask again for parameters | it can ask for alternative
         # it can say by | it can confirm
-        if input == "negate":
+        if input == "restart":
+            return Welcome(self.keyword_dict), self.extracted_preferences
+        elif input == "bye":
+            return Goodbye(self.keyword_dict), self.extracted_preferences
+        elif input == "negate":
             return Welcome(self.keyword_dict)
         elif input == "reqalts" or input == "reqmore":
             return Suggestion(
@@ -249,7 +278,11 @@ class GiveDetails(State):
         return user_utterance
 
     def transition(self, input):
-        if input == "thankyou":
+        if input == "restart":
+            return Welcome(self.keyword_dict), self.extracted_preferences
+        elif input == "bye":
+            return Goodbye(self.keyword_dict), self.extracted_preferences
+        elif input == "thankyou":
             return Goodbye(self.keyword_dict)
         elif input == "negate":
             return Suggestion(self.keyword_dict)
