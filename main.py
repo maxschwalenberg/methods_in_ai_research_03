@@ -13,10 +13,10 @@ obj.assignClass()
 obj.createDataset()
 
 # Rule-Based Baseline
-rule_based_baseline = RuleBasedBaseline(obj)
-filename2 = "data/baseline_rules.json"
-rule_based_baseline.loadRulesFile(filename2)
-rule_based_baseline.evaluate()
+# rule_based_baseline = RuleBasedBaseline(obj)
+# filename2 = "data/baseline_rules.json"
+# rule_based_baseline.loadRulesFile(filename2)
+# rule_based_baseline.evaluate()
 
 """# ML Model 1
 decision_tree = develop(DecisionTreeModel(obj))
@@ -26,13 +26,13 @@ decision_tree = develop(DecisionTreeModel(obj))
 logistic_regression = develop(LogisticRegressionModel(obj))
 # show_results(logistic_regression)
 
-ex_sentence = "thank you"
-pred = logistic_regression.predict_single_sentence(ex_sentence)
+# ex_sentence = "thank you"
+# pred = logistic_regression.predict_single_sentence(ex_sentence)
 
 # do example prediction
-print(f"sentence `{ex_sentence}` --> {pred}")
+# print(f"sentence `{ex_sentence}` --> {pred}")
 
 
 # create the dialog
-dialog_system = DialogManagement(logistic_regression, debug=True)
+dialog_system = DialogManagement(logistic_regression, debug=False)
 dialog_system.run_dialog()
