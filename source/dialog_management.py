@@ -257,13 +257,13 @@ class Suggestion(State):
         elif input == "bye" or input == "thankyou":
             return Goodbye(self.keyword_dict), self.extracted_preferences
         elif input == "negate":
-            return Welcome(self.keyword_dict)
+            return Welcome(self.keyword_dict), self.extracted_preferences
         elif input == "reqalts" or input == "reqmore" or input == "repeat" or input == "deny":
             return Suggestion(
                 self.keyword_dict
             )  # if the user does not like the suggestion which is the next state?
         elif input == "affirm" or input == "request" or input == "ack" or input == "confirm":
-            return GiveDetails(self.keyword_dict)
+            return GiveDetails(self.keyword_dict), self.extracted_preferences
 
 
 class GiveDetails(State):
@@ -284,9 +284,9 @@ class GiveDetails(State):
         elif input == "bye" or input == "thankyou" or input == "ack" or input == "confirm" or input == "affirm":
             return Goodbye(self.keyword_dict), self.extracted_preferences
         elif input == "repeat":
-            return GiveDetails(self.keyword_dict)
+            return GiveDetails(self.keyword_dict), self.extracted_preferences
         elif input == "negate" or input == "reqalts":
-            return Suggestion(self.keyword_dict)
+            return Suggestion(self.keyword_dict), self.extracted_preferences
 
 
 class Goodbye(State):
