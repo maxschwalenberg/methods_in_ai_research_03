@@ -31,7 +31,6 @@ class DialogManagement:
             ) = self.current_state.run(self.classifier)
             self.current_state = new_state
 
-
             if self.debug:
                 print(f"Classified `{classified_response}`")
 
@@ -65,22 +64,43 @@ def patternMatchKeywordExtraction(data, keyword_dict):
     data = data.lower()
     temp = None
     result = {}
-    if temp := re.findall("(\w+) food", data):
-        result["food"] = temp[0]
-        # result.append(("food", temp[0]))
-    if temp := re.findall("in the (\w+)", data):
-        result["area"] = temp[0]
-        # result.append(("area", temp[0]))
-    if temp := re.findall("(\w+) priced", data):
-        # result.append(("pricerange", temp[0]))
-        result["pricerange"] = temp[0]
+    if temp := re.findall(r"in the (\w+)|(north|south|east|west)|(any)", data):
+        area = ""
+        for match in temp:
+            if match[0]:
+                area = match[0]
+            elif match[1]:
+                area = match[1]
+            elif match[2]:
+                area = "Any"
+
+        result["area"] = area
+
+    if temp := re.findall(r"(\w+) (priced|(expensive|cheap)|(any))", data):
+        price_range = ""
+        for match in temp:
+            if match[0]:
+                price_range = match[0]
+                if match[1] and match[1].lower() == "any":
+                    price_range = "Any"
+
+        result["pricerange"] = price_range
+
+    if temp := re.findall(r"(\w+) (food|(chinese|italian)|(any))", data):
+        food_type = ""
+        for match in temp:
+            if match[0]:
+                food_type = match[0]
+                if match[1] and match[1].lower() == "any":
+                    food_type = "Any"
+
+        result["food"] = food_type
 
     if temp := re.findall("(\w+) restaurant", data):
         for key, values in keyword_dict.items():
             for value in values:
                 if levdistance(temp[0], value) <= 2:
                     result[key] = value
-
     return result
 
 
@@ -95,20 +115,14 @@ class State:
         classified_response = classifier.predict_single_sentence(self.user_utterance)
 
         new_state, extracted_preferences = self.transition(classified_response)
-
+        #print
+        print(self.extracted_preferences)
         return new_state, classified_response, extracted_preferences
 
     def dialog(self):
         self.user_utterance = input("User: ")
 
     def transition(self, input):
-        # if user wants to start over, it does not matter which is the current state
-        # the same with bye
-        #if input == "restart":
-         #   return Welcome()
-        #elif input == "bye":
-         #   return Goodbye()
-        #else:
         pass
 
 
@@ -244,7 +258,7 @@ class AskType(State):
 class Suggestion(State):
     def __init__(self, keyword_dict, extracted_preferences, previous_suggestion_index = None) -> None:
         super().__init__(keyword_dict)
-        filename = "data/restaurant_info.csv"
+        filename = "c:/Users/Alex/Desktop/AI/Workspace/Methods of Research/methods_in_ai_research_03/data/restaurant_info.csv"
         self.restaurant_lookup = RestaurantLookup(filename)
         self.extracted_preferences = extracted_preferences
         self.previous_suggestion_index = previous_suggestion_index
@@ -252,7 +266,7 @@ class Suggestion(State):
 
     def dialog(self):
         self.suggestions = self.restaurant_lookup.lookup(self.extracted_preferences)
-        if(self.suggestions.values != []):
+        if not self.suggestions.empty:
             random_index = 0
             while(self.previous_suggestion_index == random_index):
                 random_index = random.randrange(0, (len(self.suggestions.values) - 1))

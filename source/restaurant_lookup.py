@@ -18,9 +18,8 @@ class RestaurantLookup:
 
         result_df = self.data
         for preference_key in preferences_keys:
-            result_df = result_df.loc[
+            if preferences[preference_key] != "Any":
+                result_df = result_df.loc[
                 result_df[preference_key] == preferences[preference_key]
             ]
-            # selected_restaurant = random.choice(filtered_restaurants)
-
         return result_df
