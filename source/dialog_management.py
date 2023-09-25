@@ -1,6 +1,7 @@
 import csv
 import random
 import re
+import copy
 from Levenshtein import distance as levdistance
 
 from source.model import Model
@@ -120,7 +121,46 @@ class State:
         self.extracted_preferences_old: dict = extracted_preferences_old
         self.user_utterance = ""
 
+    def give_preferences_feedback(self):
+        changed_values = {}
+
+        for key in self.extracted_preferences:
+            try:
+                current_preference = self.extracted_preferences[key]
+                old_preference = self.extracted_preferences_old[key]
+
+                if current_preference != old_preference:
+                    changed_values[key] = current_preference
+
+            except:
+                changed_values[key] = self.extracted_preferences[key]
+
+        n_changed_values = len(list(changed_values.keys()))
+        feedback_string = ""
+        if n_changed_values > 0:
+            feedback_string += "Okay"
+            for key_i, key in enumerate(changed_values):
+                if (key_i + 1) == n_changed_values and n_changed_values > 1:
+                    feedback_string += " and "
+                else:
+                    feedback_string += ", "
+                if key == "food":
+                    feedback_string += (
+                        f"the restaurant should serve {changed_values[key]} food"
+                    )
+                elif key == "area":
+                    feedback_string += (
+                        f"the restaurant should be in the {changed_values[key]}"
+                    )
+                elif key == "price":
+                    feedback_string += f"the price should be {changed_values[key]}"
+
+            feedback_string += ". "
+
+        self.feedback_string = feedback_string
+
     def run(self, classifier: Model):
+        self.give_preferences_feedback()
         self.dialog()
         classified_response = classifier.predict_single_sentence(self.user_utterance)
 
@@ -143,7 +183,7 @@ class Welcome(State):
         super().__init__(keyword_dict, extracted_preferences, extracted_preferences_old)
 
     def dialog(self):
-        print("System: Hello, how can I help you?")
+        print(f"System: {self.feedback_string}Hello, how can I help you?")
         user_utterance = super().dialog()
 
         return user_utterance
@@ -164,6 +204,7 @@ class Welcome(State):
             )
         elif input == "inform" or input == "hello":
             # extract preferences
+            self.extracted_preferences_old = copy.deepcopy(self.extracted_preferences)
             self.extracted_preferences = patternMatchKeywordExtraction(
                 self.user_utterance, self.keyword_dict
             )
@@ -220,7 +261,7 @@ class AskArea(State):
         super().__init__(keyword_dict, extracted_preferences, extracted_preferences_old)
 
     def dialog(self):
-        print("System: Which area do you want to go?")
+        print(f"System: {self.feedback_string}Which area do you want to go?")
         user_utterance = super().dialog()
 
         return user_utterance
@@ -248,6 +289,8 @@ class AskArea(State):
             )
         elif input == "inform":
             # extract preferences
+            self.extracted_preferences_old = copy.deepcopy(self.extracted_preferences)
+
             self.extracted_preferences.update(
                 patternMatchKeywordExtraction(self.user_utterance, self.keyword_dict)
             )
@@ -271,7 +314,7 @@ class AskPrice(State):
         super().__init__(keyword_dict, extracted_preferences, extracted_preferences_old)
 
     def dialog(self):
-        print("System: How expensive should the restaurant be?")
+        print(f"System: {self.feedback_string}How expensive should the restaurant be?")
         user_utterance = super().dialog()
 
         return user_utterance
@@ -299,6 +342,7 @@ class AskPrice(State):
             )
         elif input == "inform":
             # extract preferences
+            self.extracted_preferences_old = copy.deepcopy(self.extracted_preferences)
             self.extracted_preferences.update(
                 patternMatchKeywordExtraction(self.user_utterance, self.keyword_dict)
             )
@@ -322,7 +366,7 @@ class AskType(State):
         super().__init__(keyword_dict, extracted_preferences, extracted_preferences_old)
 
     def dialog(self):
-        print("System: What type of food would you like?")
+        print(f"System: {self.feedback_string}What type of food would you like?")
         user_utterance = super().dialog()
 
         return user_utterance
@@ -342,6 +386,7 @@ class AskType(State):
             )
         elif input == "inform":
             # extract preferences
+            self.extracted_preferences_old = copy.deepcopy(self.extracted_preferences)
             self.extracted_preferences.update(
                 patternMatchKeywordExtraction(self.user_utterance, self.keyword_dict)
             )
@@ -382,7 +427,7 @@ class Suggestion(State):
                 random_index = random.randrange(0, (len(self.suggestions.values) - 1))
             self.previous_suggestion_index = random_index
             print(
-                'System: The best restaurant according to your preferences is: "',
+                f'System: {self.feedback_string}The best restaurant according to your preferences is: "',
                 self.suggestions.values[random_index][0],
                 '"',
             )
@@ -459,12 +504,12 @@ class GiveDetails(State):
 
         if request_type == "phone":
             print(
-                "System: The phone number of this restaurant is:",
+                f"System: {self.feedback_string}The phone number of this restaurant is:",
                 self.suggestions[self.previous_suggestion_index][4],
             )
         elif request_type == "address":
             print(
-                "System: The address number of this restaurant is:",
+                f"System: {self.feedback_string}The address number of this restaurant is:",
                 self.suggestions[self.previous_suggestion_index][5],
             )
         else:
