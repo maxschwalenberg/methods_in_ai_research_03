@@ -64,48 +64,39 @@ def patternMatchRequest(data):
     else:
         return None
 
-
 def patternMatchKeywordExtraction(data, keyword_dict):
     data = data.lower()
     temp = None
     result = {}
-    if temp := re.findall(r"in the (\w+)|(north|south|east|west)|(any)", data):
-        area = ""
-        for match in temp:
+
+    if temp := re.findall("(\w+) food", data):
+        result["food"] = temp[0]
+
+    if temp := re.findall(r"in the (\w+)|(north|south|east|west|centre)", data):
+         for match in temp:
             if match[0]:
-                area = match[0]
+                result["area"] = match[0]
             elif match[1]:
-                area = match[1]
-            elif match[2]:
-                area = "Any"
-
-        result["area"] = area
-
-    if temp := re.findall(r"(\w+) (priced|(expensive|cheap)|(any))", data):
-        price_range = ""
-        for match in temp:
+                result["area"] = match[1]
+       
+    if temp := re.findall(r"(\w+) priced |(expensive|cheap|moderate)", data):
+          for match in temp:
             if match[0]:
-                price_range = match[0]
-                if match[1] and match[1].lower() == "any":
-                    price_range = "Any"
-
-        result["pricerange"] = price_range
-
-    if temp := re.findall(r"(\w+) (food|(chinese|italian)|(any))", data):
-        food_type = ""
-        for match in temp:
-            if match[0]:
-                food_type = match[0]
-                if match[1] and match[1].lower() == "any":
-                    food_type = "Any"
-
-        result["food"] = food_type
+                result["pricerange"] = match[0]
+            elif match[1]:
+                result["pricerange"] = match[1]
 
     if temp := re.findall("(\w+) restaurant", data):
         for key, values in keyword_dict.items():
             for value in values:
                 if levdistance(temp[0], value) <= 2:
                     result[key] = value
+
+    if temp := re.findall("any (\w+)", data):
+        for key, _ in keyword_dict.items():
+            if levdistance(temp[0], key) <= 2:
+                result[key] = "Any"
+                
     return result
 
 
