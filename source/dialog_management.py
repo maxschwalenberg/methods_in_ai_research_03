@@ -64,6 +64,7 @@ def patternMatchRequest(data):
     else:
         return None
 
+
 def patternMatchKeywordExtraction(data, keyword_dict):
     data = data.lower()
     temp = None
@@ -73,14 +74,14 @@ def patternMatchKeywordExtraction(data, keyword_dict):
         result["food"] = temp[0]
 
     if temp := re.findall(r"in the (\w+)|(north|south|east|west|centre)", data):
-         for match in temp:
+        for match in temp:
             if match[0]:
                 result["area"] = match[0]
             elif match[1]:
                 result["area"] = match[1]
-       
+
     if temp := re.findall(r"(\w+) priced |(expensive|cheap|moderate)", data):
-          for match in temp:
+        for match in temp:
             if match[0]:
                 result["pricerange"] = match[0]
             elif match[1]:
@@ -96,7 +97,7 @@ def patternMatchKeywordExtraction(data, keyword_dict):
         for key, _ in keyword_dict.items():
             if levdistance(temp[0], key) <= 2:
                 result[key] = "Any"
-                
+
     return result
 
 
@@ -143,7 +144,7 @@ class State:
                     feedback_string += (
                         f"the restaurant should be in the {changed_values[key]}"
                     )
-                elif key == "price":
+                elif key == "pricerange":
                     feedback_string += f"the price should be {changed_values[key]}"
 
             feedback_string += ". "
