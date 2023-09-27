@@ -3,7 +3,9 @@ from source.baseline import RuleBasedBaseline
 from source.ml_model import DecisionTreeModel, LogisticRegressionModel
 from source.developmentmodels import show_results, develop
 from source.dialog_management import DialogManagement
+from source.config import setup
 
+configuration = setup()
 
 obj = datacreator(False)
 filename = "data/dialog_acts.dat"
