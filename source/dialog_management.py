@@ -3,10 +3,15 @@ import random
 import re
 import copy
 import time
+import os
 from Levenshtein import distance as levdistance
+from gtts import gTTS
+import pyttsx3
 
 from source.model import Model
 from source.restaurant_lookup import RestaurantLookup
+
+engine = pyttsx3.init()
 
 
 class DialogManagement:
@@ -17,16 +22,8 @@ class DialogManagement:
     def __init__(self, classifier: Model, configuration, debug=False) -> None:
         self.classifier = classifier
 
-        # Configuration settings by the user
-        (
-            self.t2s,
-            self.delay,
-            self.allow_feedback,
-            self.allow_preference_change,
-        ) = configuration
-
         # Gather the known keywords for the
-        filename = "data/restaurant_info.csv"
+        filename = "data/new_restaurant_info.csv"
         self.fetchKeywords(filename)
 
         # initialize info instance
@@ -64,6 +61,12 @@ class DialogManagement:
                     keyword_dict[keyword].add(row[keyword])
 
         self.keyword_dict = keyword_dict
+
+
+def text_to_speech(message: str):
+    engine.say(message)
+    # play the speech
+    engine.runAndWait()
 
 
 def patternMatchRequest(data):
@@ -124,7 +127,14 @@ class Info:
         self.keyword_dict = keyword_dict
         self.extracted_preferences = extracted_preferences
         self.extracted_preferences_old = extracted_preferences_old
-        self.configuration = configuration
+
+        # Configuration settings by the user
+        (
+            self.t2s,
+            self.delay,
+            self.allow_feedback,
+            self.allow_preference_change,
+        ) = configuration
 
 
 class State:
@@ -134,23 +144,21 @@ class State:
 
         # create two dicts of extracted preferences. the old one always stores the extracted preferences of the previous state
         # that way the system can give feedback to the user if new preferences were detected
-        self.extracted_preferences: dict = info.extracted_preferences
-        self.extracted_preferences_old: dict = info.extracted_preferences_old
         self.user_utterance = ""
 
     def give_preferences_feedback(self):
         changed_values = {}
 
-        for key in self.extracted_preferences:
+        for key in self.info.extracted_preferences:
             try:
-                current_preference = self.extracted_preferences[key]
-                old_preference = self.extracted_preferences_old[key]
+                current_preference = self.info.extracted_preferences[key]
+                old_preference = self.info.extracted_preferences_old[key]
 
                 if current_preference != old_preference:
                     changed_values[key] = current_preference
 
             except:
-                changed_values[key] = self.extracted_preferences[key]
+                changed_values[key] = self.info.extracted_preferences[key]
 
         n_changed_values = len(list(changed_values.keys()))
         feedback_string = ""
@@ -181,13 +189,14 @@ class State:
 
         # self.dialog() executes system response
         # optionally do delay
-
+        if self.info.delay:
+            time.sleep(random.uniform(0.5, 2))
         self.dialog()
         classified_response = classifier.predict_single_sentence(self.user_utterance)
 
         new_state = self.transition(classified_response)
         # print
-        print(self.extracted_preferences)
+        print(self.info.extracted_preferences)
         return new_state, classified_response
 
     def dialog(self):
@@ -202,7 +211,10 @@ class Welcome(State):
         super().__init__(info)
 
     def dialog(self):
-        print(f"System: {self.feedback_string}Hello, how can I help you?")
+        message = f"System: {self.feedback_string}Hello, how can I help you?"
+        print(message)
+        if self.info.t2s:
+            text_to_speech(message)
         user_utterance = super().dialog()
 
         return user_utterance
@@ -210,28 +222,22 @@ class Welcome(State):
     def transition(self, input):
         extracted_preferences = {}
         if input == "restart" or input == "repeat":
-            return Welcome(
-                self.info
-            )
+            return Welcome(self.info)
         elif input == "bye":
-            return Goodbye(
-                self.info
-            )
+            return Goodbye(self.info)
         elif input == "inform" or input == "hello":
             # extract preferences
-            self.extracted_preferences_old = copy.deepcopy(self.extracted_preferences)
+            self.info.extracted_preferences_old = copy.deepcopy(
+                self.info.extracted_preferences
+            )
             self.info.extracted_preferences = patternMatchKeywordExtraction(
                 self.user_utterance, self.keyword_dict
             )
-            return AskForInformation(
-                self.info
-            )
+            return AskForInformation(self.info)
 
 
 class AskForInformation(State):
-    def __init__(
-        self, info: Info
-    ) -> None:
+    def __init__(self, info: Info) -> None:
         super().__init__(info)
 
     def dialog(self):
@@ -241,71 +247,55 @@ class AskForInformation(State):
 
     def transition(self, input):
         # analyze preferences and route accordingly
-        if "area" not in self.extracted_preferences:
-            return AskArea(
-                self.info
-            )
-        elif "pricerange" not in self.extracted_preferences:
-            return AskPrice(
-                self.info
-            )
-        elif "food" not in self.extracted_preferences:
-            return AskType(
-                self.info
-            )
+        if "area" not in self.info.extracted_preferences:
+            return AskArea(self.info)
+        elif "pricerange" not in self.info.extracted_preferences:
+            return AskPrice(self.info)
+        elif "food" not in self.info.extracted_preferences:
+            return AskType(self.info)
         else:  # everything is filled
-            return Suggestion(
-                self.info
-            )
+            return Suggestion(self.info)
 
 
 class AskArea(State):
-    def __init__(
-        self, info: Info
-    ) -> None:
+    def __init__(self, info: Info) -> None:
         super().__init__(info)
 
     def dialog(self):
-        print(f"System: {self.feedback_string}Which area do you want to go?")
+        message = f"System: {self.feedback_string}Which area do you want to go?"
+        print(message)
+        if self.info.t2s:
+            text_to_speech(message)
+
         user_utterance = super().dialog()
 
         return user_utterance
 
     def transition(self, input):
         if input == "restart":
-            return Welcome(
-                self.info
-            )
+            return Welcome(self.info)
         elif input == "bye":
-            return Goodbye(
-                self.info
-            )
+            return Goodbye(self.info)
         elif (
             input == "negate" or input == "repeat"
         ):  # if the user negate the ask, we should ask again
-            return AskArea(
-                self.info
-            )
+            return AskArea(self.info)
         elif input == "inform":
             # extract preferences
-            self.extracted_preferences_old = copy.deepcopy(self.extracted_preferences)
+            self.info.extracted_preferences_old = copy.deepcopy(
+                self.info.extracted_preferences
+            )
 
-            self.extracted_preferences.update(
+            self.info.extracted_preferences.update(
                 patternMatchKeywordExtraction(self.user_utterance, self.keyword_dict)
             )
-            return AskForInformation(
-                self.info
-            )
+            return AskForInformation(self.info)
         else:
-            return AskForInformation(
-                self.info
-            )
+            return AskForInformation(self.info)
 
 
 class AskPrice(State):
-    def __init__(
-        self, info: Info
-    ) -> None:
+    def __init__(self, info: Info) -> None:
         super().__init__(info)
 
     def dialog(self):
@@ -316,38 +306,28 @@ class AskPrice(State):
 
     def transition(self, input):
         if input == "restart":
-            return Welcome(
-                self.info
-            )
+            return Welcome(self.info)
         elif input == "bye":
-            return Goodbye(
-                self.info
-            )
+            return Goodbye(self.info)
         elif (
             input == "negate" or input == "repeat"
         ):  # if the user negate the ask, we should ask again
-            return AskPrice(
-                self.info
-            )
+            return AskPrice(self.info)
         elif input == "inform":
             # extract preferences
-            self.extracted_preferences_old = copy.deepcopy(self.extracted_preferences)
-            self.extracted_preferences.update(
+            self.info.extracted_preferences_old = copy.deepcopy(
+                self.info.extracted_preferences
+            )
+            self.info.extracted_preferences.update(
                 patternMatchKeywordExtraction(self.user_utterance, self.keyword_dict)
             )
-            return AskForInformation(
-                self.info
-            )
+            return AskForInformation(self.info)
         else:
-            return AskForInformation(
-                self.info
-            )
+            return AskForInformation(self.info)
 
 
 class AskType(State):
-    def __init__(
-        self, info: Info
-    ) -> None:
+    def __init__(self, info: Info) -> None:
         super().__init__(info)
 
     def dialog(self):
@@ -358,28 +338,24 @@ class AskType(State):
 
     def transition(self, input):
         if input == "restart":
-            return Welcome(self.keyword_dict)
+            return Welcome(self.info)
         elif input == "bye":
-            return Goodbye(self.keyword_dict)
+            return Goodbye(self.info)
         elif (
             input == "negate" or input == "negate"
         ):  # if the user negate the ask, we should ask again
-            return AskType(
-                self.info
-            )
+            return AskType(self.info)
         elif input == "inform":
             # extract preferences
-            self.extracted_preferences_old = copy.deepcopy(self.extracted_preferences)
-            self.extracted_preferences.update(
+            self.info.extracted_preferences_old = copy.deepcopy(
+                self.info.extracted_preferences
+            )
+            self.info.extracted_preferences.update(
                 patternMatchKeywordExtraction(self.user_utterance, self.keyword_dict)
             )
-            return AskForInformation(
-                self.info
-            )
+            return AskForInformation(self.info)
         else:
-            return AskForInformation(
-                self.info
-            )
+            return AskForInformation(self.info)
 
 
 class Suggestion(State):
@@ -390,14 +366,15 @@ class Suggestion(State):
     ) -> None:
         super().__init__(info)
 
-        filename = "data/restaurant_info.csv"
+        filename = "data/new_restaurant_info.csv"
         self.restaurant_lookup = RestaurantLookup(filename)
-        self.extracted_preferences = self.info.extracted_preferences
         self.previous_suggestion_index = previous_suggestion_index
         self.suggestions = None
 
     def dialog(self):
-        self.suggestions = self.restaurant_lookup.lookup(self.info.extracted_preferences)
+        self.suggestions = self.restaurant_lookup.lookup(
+            self.info.extracted_preferences
+        )
         if not self.suggestions.empty:
             random_index = 0
             while self.previous_suggestion_index == random_index:
@@ -418,17 +395,11 @@ class Suggestion(State):
         # after the suggestion it can negate/ back to ask again for parameters | it can ask for alternative
         # it can say by | it can confirm
         if input == "restart":
-            return Welcome(
-                self.info
-            )
+            return Welcome(self.info)
         elif input == "bye" or input == "thankyou":
-            return Goodbye(
-                self.info
-            )
+            return Goodbye(self.info)
         elif input == "negate":
-            return Welcome(
-                self.info
-            )
+            return Welcome(self.info)
         elif input == "reqalts" or input == "reqmore":
             return Suggestion(
                 self.info,
@@ -483,7 +454,7 @@ class GiveDetails(State):
 
     def transition(self, input):
         if input == "restart":
-            return Welcome(self.keyword_dict)
+            return Welcome(self.info)
         elif (
             input == "bye"
             or input == "thankyou"
@@ -491,9 +462,7 @@ class GiveDetails(State):
             or input == "confirm"
             or input == "affirm"
         ):
-            return Goodbye(
-                self.info
-            )
+            return Goodbye(self.info)
         elif input == "repeat":
             return GiveDetails(
                 self.info,
@@ -516,9 +485,7 @@ class GiveDetails(State):
 
 
 class Goodbye(State):
-    def __init__(
-        self, info: Info
-    ) -> None:
+    def __init__(self, info: Info) -> None:
         super().__init__(info)
 
     def dialog(self):

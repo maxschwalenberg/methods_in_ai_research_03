@@ -36,5 +36,5 @@ logistic_regression = develop(LogisticRegressionModel(obj))
 
 
 # create the dialog
-dialog_system = DialogManagement(logistic_regression, configuration, debug=False)
+dialog_system = DialogManagement(logistic_regression, configuration, debug=True)
 dialog_system.run_dialog()

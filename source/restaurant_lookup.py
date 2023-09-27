@@ -9,8 +9,8 @@ class RestaurantLookup:
     def lookup(self, preferences: dict) -> pd.DataFrame:
         data_columns = self.data.columns.tolist()
         preferences_keys = list(preferences.keys())
-        
-        try:
+
+        if "additional_requirement" in preferences_keys:
             preferences_keys.remove("additional_requirement")
 
         # assert that each given key of the preferences actually makes sense
@@ -40,7 +40,7 @@ class RestaurantLookup:
     ) -> pd.DataFrame:
         rowsdrop = []
         for i in range(len(results_df)):
-            row = results_df.loc[i]
+            row = results_df.iloc[i]
             price = row["pricerange"]
             area = row["area"]
             food = row["food"]
