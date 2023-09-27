@@ -13,8 +13,11 @@ class DialogManagement:
     the conversation.
     """
 
-    def __init__(self, classifier: Model, debug=False) -> None:
+    def __init__(self, classifier: Model, configuration, debug=False) -> None:
         self.classifier = classifier
+
+        # Configuration settings by the user
+        self.config = configuration
 
         # Gather the known keywords for the
         filename = "data/restaurant_info.csv"
