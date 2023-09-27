@@ -52,7 +52,7 @@ class DialogManagement:
     def fetchKeywords(self, filename):
         file = open(filename)
         file = csv.DictReader(file)
-        keyword_names = file.fieldnames[1:4]
+        keyword_names = file.fieldnames[2:5]
         keyword_dict = {key: set() for key in keyword_names}
 
         for row in file:
@@ -382,7 +382,7 @@ class Suggestion(State):
             self.previous_suggestion_index = random_index
             print(
                 f'System: {self.feedback_string}The best restaurant according to your preferences is: "',
-                self.suggestions.values[random_index][0],
+                self.suggestions.values[random_index][1],
                 '"',
             )
         else:
@@ -439,12 +439,12 @@ class GiveDetails(State):
         if request_type == "phone":
             print(
                 f"System: {self.feedback_string}The phone number of this restaurant is:",
-                self.suggestions[self.previous_suggestion_index][4],
+                self.suggestions[self.previous_suggestion_index][5],
             )
         elif request_type == "address":
             print(
                 f"System: {self.feedback_string}The address number of this restaurant is:",
-                self.suggestions[self.previous_suggestion_index][5],
+                self.suggestions[self.previous_suggestion_index][6],
             )
         else:
             print("Sorry I can't understand this request")
