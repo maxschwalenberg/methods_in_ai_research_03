@@ -129,6 +129,7 @@ class Info:
 
 class State:
     def __init__(self, info: Info) -> None:
+        self.info = info
         self.keyword_dict = info.keyword_dict
 
         # create two dicts of extracted preferences. the old one always stores the extracted preferences of the previous state
@@ -219,7 +220,7 @@ class Welcome(State):
         elif input == "inform" or input == "hello":
             # extract preferences
             self.extracted_preferences_old = copy.deepcopy(self.extracted_preferences)
-            self.extracted_preferences = patternMatchKeywordExtraction(
+            self.info.extracted_preferences = patternMatchKeywordExtraction(
                 self.user_utterance, self.keyword_dict
             )
             return AskForInformation(
@@ -229,9 +230,9 @@ class Welcome(State):
 
 class AskForInformation(State):
     def __init__(
-        self, keyword_dict, extracted_preferences: dict, extracted_preferences_old: dict
+        self, info: Info
     ) -> None:
-        super().__init__(keyword_dict, extracted_preferences, extracted_preferences_old)
+        super().__init__(info)
 
     def dialog(self):
         user_utterance = "temporary string"
@@ -260,9 +261,9 @@ class AskForInformation(State):
 
 class AskArea(State):
     def __init__(
-        self, keyword_dict, extracted_preferences: dict, extracted_preferences_old: dict
+        self, info: Info
     ) -> None:
-        super().__init__(keyword_dict, extracted_preferences, extracted_preferences_old)
+        super().__init__(info)
 
     def dialog(self):
         print(f"System: {self.feedback_string}Which area do you want to go?")
@@ -303,9 +304,9 @@ class AskArea(State):
 
 class AskPrice(State):
     def __init__(
-        self, keyword_dict, extracted_preferences: dict, extracted_preferences_old: dict
+        self, info: Info
     ) -> None:
-        super().__init__(keyword_dict, extracted_preferences, extracted_preferences_old)
+        super().__init__(info)
 
     def dialog(self):
         print(f"System: {self.feedback_string}How expensive should the restaurant be?")
@@ -345,9 +346,9 @@ class AskPrice(State):
 
 class AskType(State):
     def __init__(
-        self, keyword_dict, extracted_preferences: dict, extracted_preferences_old: dict
+        self, info: Info
     ) -> None:
-        super().__init__(keyword_dict, extracted_preferences, extracted_preferences_old)
+        super().__init__(info)
 
     def dialog(self):
         print(f"System: {self.feedback_string}What type of food would you like?")
@@ -384,21 +385,19 @@ class AskType(State):
 class Suggestion(State):
     def __init__(
         self,
-        keyword_dict,
-        extracted_preferences: dict,
-        extracted_preferences_old: dict,
+        info: Info,
         previous_suggestion_index=None,
     ) -> None:
-        super().__init__(keyword_dict, extracted_preferences, extracted_preferences_old)
+        super().__init__(info)
 
         filename = "data/restaurant_info.csv"
         self.restaurant_lookup = RestaurantLookup(filename)
-        self.extracted_preferences = extracted_preferences
+        self.extracted_preferences = self.info.extracted_preferences
         self.previous_suggestion_index = previous_suggestion_index
         self.suggestions = None
 
     def dialog(self):
-        self.suggestions = self.restaurant_lookup.lookup(self.extracted_preferences)
+        self.suggestions = self.restaurant_lookup.lookup(self.info.extracted_preferences)
         if not self.suggestions.empty:
             random_index = 0
             while self.previous_suggestion_index == random_index:
@@ -452,14 +451,12 @@ class Suggestion(State):
 class GiveDetails(State):
     def __init__(
         self,
-        keyword_dict,
-        extracted_preferences: dict,
-        extracted_preferences_old: dict,
+        info: Info,
         suggestions,
         previous_suggestion_index,
         request_utterance,
     ) -> None:
-        super().__init__(keyword_dict, extracted_preferences, extracted_preferences_old)
+        super().__init__(info)
 
         self.previous_suggestion_index = previous_suggestion_index
         self.suggestions = suggestions
@@ -520,9 +517,9 @@ class GiveDetails(State):
 
 class Goodbye(State):
     def __init__(
-        self, keyword_dict, extracted_preferences: dict, extracted_preferences_old: dict
+        self, info: Info
     ) -> None:
-        super().__init__(keyword_dict, extracted_preferences, extracted_preferences_old)
+        super().__init__(info)
 
     def dialog(self):
         print("System: Goodbye, have a nice day!")

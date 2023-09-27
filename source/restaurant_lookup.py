@@ -9,7 +9,9 @@ class RestaurantLookup:
     def lookup(self, preferences: dict) -> pd.DataFrame:
         data_columns = self.data.columns.tolist()
         preferences_keys = list(preferences.keys())
-        preferences_keys.remove("additional_requirement")
+        
+        try:
+            preferences_keys.remove("additional_requirement")
 
         # assert that each given key of the preferences actually makes sense
         # --> is in the lookup tables categories
