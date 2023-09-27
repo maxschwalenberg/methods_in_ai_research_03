@@ -64,6 +64,9 @@ class DialogManagement:
 
 
 def text_to_speech(message: str):
+    # remove system string
+    if "System:" in message:
+        message.replace("System:", "")
     engine.say(message)
     # play the speech
     engine.runAndWait()
@@ -299,7 +302,13 @@ class AskPrice(State):
         super().__init__(info)
 
     def dialog(self):
-        print(f"System: {self.feedback_string}How expensive should the restaurant be?")
+        message = (
+            f"System: {self.feedback_string}How expensive should the restaurant be?"
+        )
+        print(message)
+        if self.info.t2s:
+            text_to_speech(message)
+
         user_utterance = super().dialog()
 
         return user_utterance
@@ -331,7 +340,11 @@ class AskType(State):
         super().__init__(info)
 
     def dialog(self):
-        print(f"System: {self.feedback_string}What type of food would you like?")
+        message = f"System: {self.feedback_string}What type of food would you like?"
+        print(message)
+        if self.info.t2s:
+            text_to_speech(message)
+
         user_utterance = super().dialog()
 
         return user_utterance
@@ -380,13 +393,18 @@ class Suggestion(State):
             while self.previous_suggestion_index == random_index:
                 random_index = random.randrange(0, (len(self.suggestions.values) - 1))
             self.previous_suggestion_index = random_index
-            print(
-                f'System: {self.feedback_string}The best restaurant according to your preferences is: "',
-                self.suggestions.values[random_index][1],
-                '"',
-            )
+
+            message = f'System: {self.feedback_string}The best restaurant according to your preferences is: {self.suggestions.values[random_index][1]}"'
+
+            print(message)
+            if self.info.t2s:
+                text_to_speech(message)
+
         else:
-            print("System: No restaurants found.")
+            message = "System: No restaurants found."
+            print(message)
+            if self.info.t2s:
+                text_to_speech(message)
         user_utterance = super().dialog()
 
         return user_utterance
@@ -437,17 +455,17 @@ class GiveDetails(State):
         request_type = patternMatchRequest(self.request_utterance)
 
         if request_type == "phone":
-            print(
-                f"System: {self.feedback_string}The phone number of this restaurant is:",
-                self.suggestions[self.previous_suggestion_index][5],
-            )
+            message = f"System: {self.feedback_string}The phone number of this restaurant is: {self.suggestions[self.previous_suggestion_index][5]}"
+
         elif request_type == "address":
-            print(
-                f"System: {self.feedback_string}The address number of this restaurant is:",
-                self.suggestions[self.previous_suggestion_index][6],
-            )
+            message = f"System: {self.feedback_string}The address number of this restaurant is: {self.suggestions[self.previous_suggestion_index][6]}"
+
         else:
-            print("Sorry I can't understand this request")
+            message = "Sorry I can't understand this request"
+
+        print(message)
+        if self.info.t2s:
+            text_to_speech(message)
 
         user_utterance = super().dialog()
         return user_utterance
@@ -489,7 +507,11 @@ class Goodbye(State):
         super().__init__(info)
 
     def dialog(self):
-        print("System: Goodbye, have a nice day!")
+        message = "System: Goodbye, have a nice day!"
+
+        print(message)
+        if self.info.t2s:
+            text_to_speech(message)
 
     def run(self):
         self.dialog()
