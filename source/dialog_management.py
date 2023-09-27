@@ -25,12 +25,12 @@ class DialogManagement:
             self.allow_preference_change,
         ) = configuration
 
-        # initialize info instance
-        info = Info(self.keyword_dict, {}, {}, configuration)
-
         # Gather the known keywords for the
         filename = "data/restaurant_info.csv"
         self.fetchKeywords(filename)
+
+        # initialize info instance
+        info = Info(self.keyword_dict, {}, {}, configuration)
 
         # initialize the welcome state with no known preferences
         self.current_state = Welcome(info)
@@ -432,19 +432,19 @@ class Suggestion(State):
             )
         elif input == "reqalts" or input == "reqmore":
             return Suggestion(
-                self.info
+                self.info,
                 self.previous_suggestion_index,
             )
         elif input == "request":
             return GiveDetails(
-                self.info
+                self.info,
                 self.suggestions.values,
                 self.previous_suggestion_index,
                 self.user_utterance,
             )
         else:
             return Suggestion(
-                self.info
+                self.info,
                 previous_suggestion_index=self.previous_suggestion_index,
             )  # if the user does not like the suggestion which is the next state?
 
@@ -499,21 +499,21 @@ class GiveDetails(State):
             )
         elif input == "repeat":
             return GiveDetails(
-                self.info
+                self.info,
                 self.suggestions,
                 self.previous_suggestion_index,
                 self.request_utterance,
             )
         elif input == "request":
             return GiveDetails(
-                self.info
+                self.info,
                 self.suggestions,
                 self.previous_suggestion_index,
                 self.request_utterance,
             )
         elif input == "negate" or input == "reqalts":
             return Suggestion(
-                self.info
+                self.info,
                 self.previous_suggestion_index,
             )
 
