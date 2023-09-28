@@ -75,16 +75,3 @@ class RestaurantLookup:
 
         results_df = results_df.drop(results_df.index[rowsdrop])
         return results_df
-
-
-"""test = RestaurantLookup(
-    "/home/max/python_projects/methods_in_ai_research_03/data/new_restaurant_info.csv"
-)
-a = test.lookup(
-    {
-        "food": "Any",
-        "area": "south",
-        "pricerange": "Any",
-        "additional_requirement": "romantic",
-    }
-)"""
