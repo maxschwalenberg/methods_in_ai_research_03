@@ -447,8 +447,9 @@ class Suggestion(State):
         )
         if not self.suggestions.empty:
             random_index = 0
-            while self.previous_suggestion_index == random_index:
-                random_index = random.randrange(0, (len(self.suggestions.values) - 1))
+            if len(self.suggestions.values) > 1:
+                while self.previous_suggestion_index == random_index:
+                    random_index = random.randrange(0, (len(self.suggestions.values)))
             self.previous_suggestion_index = random_index
 
             message = f"System: {self.feedback_string}The best restaurant according to your preferences is: {self.suggestions.values[random_index][0]}"
