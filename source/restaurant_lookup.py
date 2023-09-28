@@ -70,5 +70,8 @@ class RestaurantLookup:
                 if length_stay != "long":
                     rowsdrop.append(i)
 
-        results_df = results_df.drop(index=rowsdrop)
+        # make rowsdrop only contain unique indices
+        rowsdrop = list(set(rowsdrop))
+
+        results_df = results_df.drop(results_df.index[rowsdrop])
         return results_df
