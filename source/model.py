@@ -2,7 +2,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score
 from source.datacreator import datacreator
 import numpy as np
 
-
+#evaluates the models
 class Model:
     def __init__(self, datacreator_instance: datacreator) -> None:
         self.datacreator_instance = datacreator_instance
@@ -10,7 +10,8 @@ class Model:
 
     def predict(self):
         self.preds = self.model.predict(self.x_test_encoded)
-
+    
+    #creates the function so that the children can use it 
     def predict_single_sentence(self, user_input: str):
         pass
 

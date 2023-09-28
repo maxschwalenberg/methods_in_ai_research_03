@@ -11,6 +11,7 @@ import pyttsx3
 from source.model import Model
 from source.restaurant_lookup import RestaurantLookup
 
+#for speech
 engine = pyttsx3.init()
 
 
@@ -36,6 +37,7 @@ class DialogManagement:
         self.debug = debug
 
     def run_dialog(self):
+        #while the current state is not goodbye we can go to a new state which is based on the running of classifier ml model
         while not isinstance(self.current_state, Goodbye):
             (
                 new_state,
@@ -49,10 +51,11 @@ class DialogManagement:
         # run the goodbye state
         self.current_state.run()
 
+
     def fetchKeywords(self, filename):
         file = open(filename)
         file = csv.DictReader(file)
-        keyword_names = file.fieldnames[2:5]
+        keyword_names = file.fieldnames[2:5] #incongruent with preference_extraction.py
         keyword_dict = {key: set() for key in keyword_names}
 
         for row in file:
@@ -71,7 +74,7 @@ def text_to_speech(message: str):
     # play the speech
     engine.runAndWait()
 
-
+#need to add postcode?
 def patternMatchRequest(data):
     data = data.lower()
 
@@ -402,8 +405,9 @@ class AskForAdditionalInformation(State):
         elif input == "bye":
             return Goodbye(self.info)
         elif (
+            #why negate or negate?
             input == "negate" or input == "negate"
-        ):  # if the user negate the ask, we should ask again
+        ):  # if the user negate the ask, we should ask again ?? Should this go to suggestion?
             return Suggestion(self.info)
         elif input == "inform":
             # extract preferences
@@ -455,7 +459,7 @@ class Suggestion(State):
 
     def transition(self, input):
         # after the suggestion it can negate/ back to ask again for parameters | it can ask for alternative
-        # it can say by | it can confirm
+        # it can say bye | it can confirm
         if input == "restart":
             return Welcome(self.info)
         elif input == "bye" or input == "thankyou":

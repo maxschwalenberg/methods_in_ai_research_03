@@ -21,18 +21,23 @@ test_list = [
     "Find a Cuban restaurant in the center"
 ]
 
+
+#opens the restaurant_info.csv and makes a dictionary out of the headers pricerange, area and food
 def fetchKeywords(filename):
     file = open(filename)
     file = csv.DictReader(file)
     keyword_names = file.fieldnames[1:4]
+#creates a set per header keyword
     keyword_dict = {key: set() for key in keyword_names}
-
+#goes through all the rows and gives a dict with the headers and all the options that the header can have
     for row in file:
         for keyword in keyword_names:
             if(row[keyword]) != "":
                 keyword_dict[keyword].add(row[keyword])
+    print (keyword_dict)            
     return keyword_dict
 
+#goes through the whole data and finds all the types within a header
 def patternMatch(data, keyword_dict):
     data = data.lower()
     temp = None
@@ -42,11 +47,11 @@ def patternMatch(data, keyword_dict):
     if temp := re.findall("in the (\w+)", data):
         result.append(("area", temp[0]))
     if temp := re.findall("(\w+) priced", data):
-       result.append(("pricerange", temp[0]))
+        result.append(("pricerange", temp[0]))
     if temp := re.findall("(\w+) restaurant", data):
-       for key, values in keyword_dict.items():
-           for value in values:
-               if levdistance(temp[0], value) <= 2:
-                result.append((key, value))
+        for key, values in keyword_dict.items():
+            for value in values:
+                if levdistance(temp[0], value) <= 2:
+                    result.append((key, value))
     return result
     
