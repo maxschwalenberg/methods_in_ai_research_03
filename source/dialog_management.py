@@ -118,11 +118,15 @@ def patternMatchKeywordExtraction(data, keyword_dict):
 
     return result
 
+
 def additionalKeywordExtraction(data):
     result = {}
-    add_list = ["touristic","assigned seats"
-            ,"children","romantic", 
-            ]
+    add_list = [
+        "touristic",
+        "assigned seats",
+        "children",
+        "romantic",
+    ]
     data = data.split()
     for word in data:
         for keyword in add_list:
@@ -201,7 +205,11 @@ class State:
         self.feedback_string = feedback_string
 
     def run(self, classifier: Model):
-        self.give_preferences_feedback()
+        # enable/disable the feedback for the user that a preference was extracted
+        if self.info.allow_feedback:
+            self.give_preferences_feedback()
+        else:
+            self.feedback_string = ""
 
         # self.dialog() executes system response
         # optionally do delay
@@ -382,7 +390,8 @@ class AskType(State):
             return AskForInformation(self.info)
         else:
             return AskForInformation(self.info)
-        
+
+
 class AskForAdditionalInformation(State):
     def __init__(self, info: Info) -> None:
         super().__init__(info)
@@ -438,7 +447,7 @@ class Suggestion(State):
                 random_index = random.randrange(0, (len(self.suggestions.values) - 1))
             self.previous_suggestion_index = random_index
 
-            message = f'System: {self.feedback_string}The best restaurant according to your preferences is: {self.suggestions.values[random_index][1]}"'
+            message = f"System: {self.feedback_string}The best restaurant according to your preferences is: {self.suggestions.values[random_index][0]}"
 
             print(message)
             if self.info.t2s:
@@ -499,10 +508,10 @@ class GiveDetails(State):
         request_type = patternMatchRequest(self.request_utterance)
 
         if request_type == "phone":
-            message = f"System: {self.feedback_string}The phone number of this restaurant is: {self.suggestions[self.previous_suggestion_index][5]}"
+            message = f"System: {self.feedback_string}The phone number of this restaurant is: {self.suggestions[self.previous_suggestion_index][4]}"
 
         elif request_type == "address":
-            message = f"System: {self.feedback_string}The address number of this restaurant is: {self.suggestions[self.previous_suggestion_index][6]}"
+            message = f"System: {self.feedback_string}The address number of this restaurant is: {self.suggestions[self.previous_suggestion_index][5]}"
 
         else:
             message = "Sorry I can't understand this request"
