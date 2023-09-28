@@ -118,6 +118,19 @@ def patternMatchKeywordExtraction(data, keyword_dict):
 
     return result
 
+def additionalKeywordExtraction(data):
+    result = {}
+    add_list = ["touristic","assigned seats"
+            ,"children","romantic", 
+            ]
+    data = data.split()
+    for word in data:
+        for keyword in add_list:
+            if levdistance(word, keyword) <= 2:
+                result["additional_requirement"] = keyword
+                break
+    return result
+
 
 class Info:
     def __init__(
@@ -257,7 +270,7 @@ class AskForInformation(State):
         elif "food" not in self.info.extracted_preferences:
             return AskType(self.info)
         else:  # everything is filled
-            return Suggestion(self.info)
+            return AskForAdditionalInformation(self.info)
 
 
 class AskArea(State):
@@ -367,6 +380,37 @@ class AskType(State):
                 patternMatchKeywordExtraction(self.user_utterance, self.keyword_dict)
             )
             return AskForInformation(self.info)
+        else:
+            return AskForInformation(self.info)
+        
+class AskForAdditionalInformation(State):
+    def __init__(self, info: Info) -> None:
+        super().__init__(info)
+
+    def dialog(self):
+        message = f"System: {self.feedback_string}Do you have additional requirements?"
+        print(message)
+        if self.info.t2s:
+            text_to_speech(message)
+        user_utterance = super().dialog()
+
+        return user_utterance
+
+    def transition(self, input):
+        if input == "restart":
+            return Welcome(self.info)
+        elif input == "bye":
+            return Goodbye(self.info)
+        elif (
+            input == "negate" or input == "negate"
+        ):  # if the user negate the ask, we should ask again
+            return Suggestion(self.info)
+        elif input == "inform":
+            # extract preferences
+            self.info.extracted_preferences.update(
+                additionalKeywordExtraction(self.user_utterance)
+            )
+            return Suggestion(self.info)
         else:
             return AskForInformation(self.info)
 
