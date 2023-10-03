@@ -1,11 +1,11 @@
 from sklearn.metrics import accuracy_score, precision_score, recall_score
-from source.datacreator import datacreator
+from source.datacreator import Datacreator
 import numpy as np
 
 
 # evaluates the models
 class Model:
-    def __init__(self, datacreator_instance: datacreator) -> None:
+    def __init__(self, datacreator_instance: Datacreator) -> None:
         self.datacreator_instance = datacreator_instance
         self.fitted = False
 

@@ -4,14 +4,14 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn import tree
 
-from source.datacreator import datacreator
+from source.datacreator import Datacreator
 from source.model import Model
 
 
 class MLModel(Model):
     # var :datacreator refers to the class datacreator
     def __init__(
-        self, datacreator_instance: datacreator
+        self, datacreator_instance: Datacreator
     ) -> None:  # function returns none, so you cannot put in a wrong type
         # inherits from the model.py class Model
         super().__init__(datacreator_instance)
@@ -60,7 +60,7 @@ class MLModel(Model):
 
 
 class DecisionTreeModel(MLModel):
-    def __init__(self, datacreator_instance: datacreator) -> None:
+    def __init__(self, datacreator_instance: Datacreator) -> None:
         super().__init__(datacreator_instance)
 
     # fits the model on the training data using a decision tree classifier
@@ -72,7 +72,7 @@ class DecisionTreeModel(MLModel):
 
 
 class LogisticRegressionModel(MLModel):
-    def __init__(self, datacreator_instance: datacreator) -> None:
+    def __init__(self, datacreator_instance: Datacreator) -> None:
         super().__init__(datacreator_instance)
 
     # fits the model on the training data using a logistic regression model

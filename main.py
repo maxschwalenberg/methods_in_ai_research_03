@@ -1,4 +1,4 @@
-from source.datacreator import datacreator
+from source.datacreator import Datacreator
 from source.baseline import RuleBasedBaseline
 from source.ml_model import DecisionTreeModel, LogisticRegressionModel
 from source.dialog_management import DialogManagement
@@ -6,7 +6,7 @@ from source.config import setup
 
 configuration = setup()
 
-obj = datacreator(False)
+obj = Datacreator(False)
 filename = "data/dialog_acts.dat"
 obj.openfile(filename)
 

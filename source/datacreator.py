@@ -2,7 +2,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 
 
-class datacreator:
+class Datacreator:
     
     def __init__(self, remove_duplicate):
         #function for removing duplicates
@@ -24,6 +24,7 @@ class datacreator:
         for line in self.lines:
             label, text = (line.split(" ")[0], line.split(" ")[1:])
             text = " ".join(text)
+            text = text.strip()
             text = text.split("\n")[0]
             self.labeled_data.append([label, text])
 

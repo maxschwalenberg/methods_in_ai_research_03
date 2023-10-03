@@ -1,15 +1,15 @@
-from source.datacreator import datacreator
+from source.datacreator import Datacreator
 from source.model import Model
 import json
 
 
 class Baseline(Model):
-    def __init__(self, datacreator_instance: datacreator) -> None:
+    def __init__(self, datacreator_instance: Datacreator) -> None:
         super().__init__(datacreator_instance)
 
 
 class RuleBasedBaseline(Model):
-    def __init__(self, datacreator_instance: datacreator) -> None:
+    def __init__(self, datacreator_instance: Datacreator) -> None:
         super().__init__(datacreator_instance)
         self.rule_data = []
 
