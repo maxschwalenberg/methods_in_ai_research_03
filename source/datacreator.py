@@ -25,7 +25,6 @@ class Datacreator:
             label, text = (line.split(" ")[0], line.split(" ")[1:])
             text = " ".join(text)
             text = text.strip()
-            text = text.split("\n")[0]
             self.labeled_data.append([label, text])
 
     def createDataset(self):
