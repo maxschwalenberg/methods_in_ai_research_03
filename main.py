@@ -6,25 +6,25 @@ from source.config import setup
 
 configuration = setup()
 
-obj = Datacreator(False)
+data = Datacreator(False)
 filename = "data/dialog_acts.dat"
-obj.openfile(filename)
+data.openfile(filename)
 
-obj.assignClass()
-obj.createDataset()
+data.assignClass()
+data.createDataset()
 
 # Rule-Based Baseline
-rule_based_baseline = RuleBasedBaseline(obj)
+rule_based_baseline = RuleBasedBaseline(data)
 filename2 = "data/baseline_rules.json"
 rule_based_baseline.loadRulesFile(filename2)
 rule_based_baseline.evaluate()
 
 """# ML Model 1
-decision_tree = develop(DecisionTreeModel(obj))
+decision_tree = develop(DecisionTreeModel(data))
 # show_results(decision_tree)"""
 
 # ML Model 2
-logistic_regression = LogisticRegressionModel(obj)
+logistic_regression = LogisticRegressionModel(data)
 logistic_regression.develop()
 logistic_regression.show_results()
 quit()
