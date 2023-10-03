@@ -21,7 +21,8 @@ class Datacreator:
             self.lines = set(self.lines)
         # split the list into label and text
         for line in self.lines:
-            label, text = (line.split(" ")[0], line.split(" ")[1:])
+            splitted_line = line.split(" ", maxsplit=2)
+            label, text = (splitted_line[0], splitted_line[1])
             text = " ".join(text)
             text = text.strip()
 
