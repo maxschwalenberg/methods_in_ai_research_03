@@ -11,7 +11,7 @@ import pyttsx3
 from source.model import Model
 from source.restaurant_lookup import RestaurantLookup
 
-#for speech
+# for speech
 engine = pyttsx3.init()
 
 
@@ -37,7 +37,7 @@ class DialogManagement:
         self.debug = debug
 
     def run_dialog(self):
-        #while the current state is not goodbye we can go to a new state which is based on the running of classifier ml model
+        # while the current state is not goodbye we can go to a new state which is based on the running of classifier ml model
         while not isinstance(self.current_state, Goodbye):
             (
                 new_state,
@@ -51,11 +51,12 @@ class DialogManagement:
         # run the goodbye state
         self.current_state.run()
 
-
     def fetchKeywords(self, filename):
         file = open(filename)
         file = csv.DictReader(file)
-        keyword_names = file.fieldnames[2:5] #incongruent with preference_extraction.py
+        keyword_names = file.fieldnames[
+            2:5
+        ]  # incongruent with preference_extraction.py
         keyword_dict = {key: set() for key in keyword_names}
 
         for row in file:
@@ -74,7 +75,8 @@ def text_to_speech(message: str):
     # play the speech
     engine.runAndWait()
 
-#need to add postcode?
+
+# need to add postcode?
 def patternMatchRequest(data):
     data = data.lower()
 
@@ -313,9 +315,24 @@ class AskArea(State):
                 self.info.extracted_preferences
             )
 
-            self.info.extracted_preferences.update(
-                patternMatchKeywordExtraction(self.user_utterance, self.keyword_dict)
-            )
+            # if we want to allow preferences to be overwritten
+            if self.info.allow_preference_change:
+                self.info.extracted_preferences.update(
+                    patternMatchKeywordExtraction(
+                        self.user_utterance, self.keyword_dict
+                    )
+                )
+            # else, first delete all the entries of the extracted preferences that are already present in the dict
+            else:
+                extracted_preferences = patternMatchKeywordExtraction(
+                    self.user_utterance, self.keyword_dict
+                )
+                already_existing_keys = list(self.info.extracted_preferences.keys())
+                for existing_key in already_existing_keys:
+                    if existing_key in list(extracted_preferences.keys()):
+                        del extracted_preferences[existing_key]
+                self.info.extracted_preferences.update(extracted_preferences)
+
             return AskForInformation(self.info)
         else:
             return AskForInformation(self.info)
@@ -351,9 +368,25 @@ class AskPrice(State):
             self.info.extracted_preferences_old = copy.deepcopy(
                 self.info.extracted_preferences
             )
-            self.info.extracted_preferences.update(
-                patternMatchKeywordExtraction(self.user_utterance, self.keyword_dict)
-            )
+
+            # if we want to allow preferences to be overwritten
+            if self.info.allow_preference_change:
+                self.info.extracted_preferences.update(
+                    patternMatchKeywordExtraction(
+                        self.user_utterance, self.keyword_dict
+                    )
+                )
+            # else, first delete all the entries of the extracted preferences that are already present in the dict
+            else:
+                extracted_preferences = patternMatchKeywordExtraction(
+                    self.user_utterance, self.keyword_dict
+                )
+                already_existing_keys = list(self.info.extracted_preferences.keys())
+                for existing_key in already_existing_keys:
+                    if existing_key in list(extracted_preferences.keys()):
+                        del extracted_preferences[existing_key]
+                self.info.extracted_preferences.update(extracted_preferences)
+
             return AskForInformation(self.info)
         else:
             return AskForInformation(self.info)
@@ -387,9 +420,25 @@ class AskType(State):
             self.info.extracted_preferences_old = copy.deepcopy(
                 self.info.extracted_preferences
             )
-            self.info.extracted_preferences.update(
-                patternMatchKeywordExtraction(self.user_utterance, self.keyword_dict)
-            )
+
+            # if we want to allow preferences to be overwritten
+            if self.info.allow_preference_change:
+                self.info.extracted_preferences.update(
+                    patternMatchKeywordExtraction(
+                        self.user_utterance, self.keyword_dict
+                    )
+                )
+            # else, first delete all the entries of the extracted preferences that are already present in the dict
+            else:
+                extracted_preferences = patternMatchKeywordExtraction(
+                    self.user_utterance, self.keyword_dict
+                )
+                already_existing_keys = list(self.info.extracted_preferences.keys())
+                for existing_key in already_existing_keys:
+                    if existing_key in list(extracted_preferences.keys()):
+                        del extracted_preferences[existing_key]
+                self.info.extracted_preferences.update(extracted_preferences)
+
             return AskForInformation(self.info)
         else:
             return AskForInformation(self.info)
@@ -414,15 +463,26 @@ class AskForAdditionalInformation(State):
         elif input == "bye":
             return Goodbye(self.info)
         elif (
-            #why negate or negate?
-            input == "negate" or input == "negate"
+            # why negate or negate?
+            input == "negate"
+            or input == "negate"
         ):  # if the user negate the ask, we should ask again ?? Should this go to suggestion?
             return Suggestion(self.info)
         elif input == "inform":
-            # extract preferences
-            self.info.extracted_preferences.update(
-                additionalKeywordExtraction(self.user_utterance)
-            )
+            # if we want to allow preferences to be overwritten
+            if self.info.allow_preference_change:
+                self.info.extracted_preferences.update(
+                    additionalKeywordExtraction(self.user_utterance)
+                )
+            # else, first delete all the entries of the extracted preferences that are already present in the dict
+            else:
+                extracted_preferences = additionalKeywordExtraction(self.user_utterance)
+                already_existing_keys = list(self.info.extracted_preferences.keys())
+                for existing_key in already_existing_keys:
+                    if existing_key in list(extracted_preferences.keys()):
+                        del extracted_preferences[existing_key]
+                self.info.extracted_preferences.update(extracted_preferences)
+
             return Suggestion(self.info)
         else:
             return AskForInformation(self.info)
