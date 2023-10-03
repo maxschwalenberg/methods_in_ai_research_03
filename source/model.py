@@ -11,8 +11,8 @@ class Model:
 
         self.model: Model
 
-    def predict(self):
-        self.preds = self.model.predict(self.x_test_encoded)
+    def predict(self, encoded_sentence):
+        self.preds = self.model.predict(encoded_sentence)
 
     # creates the function so that the children can use it
     def predict_single_sentence(self, user_input: str):

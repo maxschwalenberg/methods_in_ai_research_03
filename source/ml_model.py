@@ -55,7 +55,7 @@ class MLModel(Model):
     def develop(self):
         self.create_bag_of_words()
         self.fit()
-        self.predict()
+        self.predict(self.x_test_encoded)
         self.evaluate()
 
 
