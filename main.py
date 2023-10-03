@@ -1,7 +1,6 @@
 from source.datacreator import datacreator
 from source.baseline import RuleBasedBaseline
 from source.ml_model import DecisionTreeModel, LogisticRegressionModel
-from source.developmentmodels import show_results, develop
 from source.dialog_management import DialogManagement
 from source.config import setup
 
@@ -25,7 +24,10 @@ decision_tree = develop(DecisionTreeModel(obj))
 # show_results(decision_tree)"""
 
 # ML Model 2
-logistic_regression = develop(LogisticRegressionModel(obj))
+logistic_regression = LogisticRegressionModel(obj)
+logistic_regression.develop()
+logistic_regression.show_results()
+quit()
 # show_results(logistic_regression)
 
 # ex_sentence = "thank you"

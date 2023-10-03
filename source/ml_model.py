@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Union
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn import tree
@@ -8,17 +9,18 @@ from source.model import Model
 
 
 class MLModel(Model):
-    #var :datacreator refers to the class datacreator
-    def __init__(self, datacreator_instance: datacreator) -> None: #function returns none, so you cannot put in a wrong type
-        #inherits from the model.py class Model
+    # var :datacreator refers to the class datacreator
+    def __init__(
+        self, datacreator_instance: datacreator
+    ) -> None:  # function returns none, so you cannot put in a wrong type
+        # inherits from the model.py class Model
         super().__init__(datacreator_instance)
 
-
     def create_bag_of_words(self):
-        #call upon this self instance to be able to change it
+        # call upon this self instance to be able to change it
         datacreator_instance = self.datacreator_instance
-        
-        #CountVectorizer converts a collection of text documents to a matrix of token counts 
+
+        # CountVectorizer converts a collection of text documents to a matrix of token counts
         if datacreator_instance.dataset_created:
             vectorizer = CountVectorizer()
             bag = vectorizer.fit_transform(
@@ -27,9 +29,9 @@ class MLModel(Model):
                 )
             )
             self.vectorizer = vectorizer
-            
+
             x_concatenated = bag.toarray()
-            #use the tokenized array to calculate how many row there are: the number of sentences 
+            # use the tokenized array to calculate how many row there are: the number of sentences
             self.x_train_encoded = x_concatenated[
                 : datacreator_instance.x_train.shape[0]
             ]
@@ -47,14 +49,24 @@ class MLModel(Model):
         pred = self.model.predict(encoded_user_input)
         return pred[0]
 
+    def fit(self):
+        pass
+
+    def develop(self):
+        self.create_bag_of_words()
+        self.fit()
+        self.predict()
+        self.evaluate()
+
 
 class DecisionTreeModel(MLModel):
     def __init__(self, datacreator_instance: datacreator) -> None:
         super().__init__(datacreator_instance)
-    
-    #fits the model on the training data using a decision tree classifier
+
+    # fits the model on the training data using a decision tree classifier
     def fit(self):
         model = tree.DecisionTreeClassifier()
+        print("Fitting decision tree classifier ...\n")
         model.fit(self.x_train_encoded, self.datacreator_instance.y_train)
         self.model = model
 
@@ -63,9 +75,11 @@ class LogisticRegressionModel(MLModel):
     def __init__(self, datacreator_instance: datacreator) -> None:
         super().__init__(datacreator_instance)
 
-    #fits the model on the training data using a logistic regression model 
+    # fits the model on the training data using a logistic regression model
     def fit(self):
         model = LogisticRegression(max_iter=1000000)
+        print("Fitting logistic regression classifier ...\n")
+
         model.fit(self.x_train_encoded, self.datacreator_instance.y_train)
 
         self.model = model

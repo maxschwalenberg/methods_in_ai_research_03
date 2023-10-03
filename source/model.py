@@ -2,16 +2,19 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score
 from source.datacreator import datacreator
 import numpy as np
 
-#evaluates the models
+
+# evaluates the models
 class Model:
     def __init__(self, datacreator_instance: datacreator) -> None:
         self.datacreator_instance = datacreator_instance
         self.fitted = False
 
+        self.model: Model
+
     def predict(self):
         self.preds = self.model.predict(self.x_test_encoded)
-    
-    #creates the function so that the children can use it 
+
+    # creates the function so that the children can use it
     def predict_single_sentence(self, user_input: str):
         pass
 
@@ -52,3 +55,13 @@ class Model:
             }
             for i, label in enumerate(np.unique(self.datacreator_instance.y_test))
         }
+
+    def show_results(self):
+        print(f"{self.model.__class__.__name__}:")
+        print("Accuracy:", self.accuracy)
+        print("Precision:", self.precision)
+        print("Recall:", self.recall)
+        for label, metrics in self.class_metrics.items():
+            print(f"{label}:")
+            print(f"  Precision: {metrics['Precision']:.4f}")
+            print(f"  Recall: {metrics['Recall']:.4f}")

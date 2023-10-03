@@ -3,6 +3,7 @@ import random
 
 
 def add_new_properties(source_csv_path: str, target_csv_path: str):
+    # function to extend the existing CSV-file by the required properties so the inference task can be done
     food_qualities = ["bad", "decent", "good"]
     crowdedness = ["busy", "not busy"]
     length_stay = ["short", "long", "normal"]
@@ -31,6 +32,3 @@ def add_new_properties(source_csv_path: str, target_csv_path: str):
     data["StayLength"] = new_stay_length_column
 
     data.to_csv(target_csv_path, index=False)
-
-
-add_new_properties("data/restaurant_info.csv", "data/new_restaurant_info.csv")
