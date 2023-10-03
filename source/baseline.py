@@ -2,12 +2,6 @@ from source.datacreator import Datacreator
 from source.model import Model
 import json
 
-
-class Baseline(Model):
-    def __init__(self, datacreator_instance: Datacreator) -> None:
-        super().__init__(datacreator_instance)
-
-
 class RuleBasedBaseline(Model):
     def __init__(self, datacreator_instance: Datacreator) -> None:
         super().__init__(datacreator_instance)
@@ -17,7 +11,9 @@ class RuleBasedBaseline(Model):
         file = open(filename).read()
         self.rule_data = json.loads(file)
 
-    def predict(self, utterance):
+    def predict(self):
+        print("Enter utterance: ")
+        utterance = input()
         for rule in self.rule_data["rules"]:
             if utterance in rule["keywords"]:
                 return rule["intent"]
@@ -50,68 +46,83 @@ class RuleBasedBaseline(Model):
             str(round(correct_counter / counter * 100, 2)) + "%",
         )
 
+class MajorityClassCounter(Model):
 
-def majorityCounter(instance):
-    ack = 0
-    affirm = 0
-    bye = 0
-    confirm = 0
-    deny = 0
-    hello = 0
-    inform = 0
-    negate = 0
-    null = 0
-    repeat = 0
-    reqalts = 0
-    reqmore = 0
-    request = 0
-    restart = 0
-    for x in instance.y_train:
-        if x == "ack":
-            ack += 1
-        if x == "affirm":
-            affirm += 1
-        if x == "bye":
-            bye += 1
-        if x == "confirm":
-            confirm += 1
-        if x == "deny":
-            deny += 1
-        if x == "hello":
-            hello += 1
-        if x == "inform":
-            inform += 1
-        if x == "negate":
-            negate += 1
-        if x == "null":
-            null += 1
-        if x == "repeat":
-            repeat += 1
-        if x == "reqalts":
-            reqalts += 1
-        if x == "reqmore":
-            reqmore += 1
-        if x == "request":
-            request += 1
-        if x == "restart":
-            restart += 1
+    def __init__(self, datacreator_instance: Datacreator) -> None:
+        super().__init__(datacreator_instance)
 
-    dictionary = {
-        "ack": ack,
-        "affirm": affirm,
-        "bye": bye,
-        "confirm": confirm,
-        "deny": deny,
-        "hello": hello,
-        "inform": inform,
-        "negate": negate,
-        "null": null,
-        "reqalts": reqalts,
-        "reqmore": reqmore,
-        "request": request,
-        "restart": restart,
-        "repeat": repeat,
-    }
-    majority = max(dictionary, key=dictionary.get)
+    def majorityCounter(self):
+        count_dict = {}
+        for x in self.datacreator_instance.y_train:
+            if x not in count_dict:
+                count_dict[x] = 1
+            else:
+                count_dict[x] += 1
+        majority = max(count_dict, key=count_dict.get)
+        print(majority)
+        
+            
 
-    return majority
+        # ack = 0
+        # affirm = 0
+        # bye = 0
+        # confirm = 0
+        # deny = 0
+        # hello = 0
+        # inform = 0
+        # negate = 0
+        # null = 0
+        # repeat = 0
+        # reqalts = 0
+        # reqmore = 0
+        # request = 0
+        # restart = 0
+        # for x in datacreator.y_train:
+        #     if x == "ack":
+        #         ack += 1
+        #     if x == "affirm":
+        #         affirm += 1
+        #     if x == "bye":
+        #         bye += 1
+        #     if x == "confirm":
+        #         confirm += 1
+        #     if x == "deny":
+        #         deny += 1
+        #     if x == "hello":
+        #         hello += 1
+        #     if x == "inform":
+        #         inform += 1
+        #     if x == "negate":
+        #         negate += 1
+        #     if x == "null":
+        #         null += 1
+        #     if x == "repeat":
+        #         repeat += 1
+        #     if x == "reqalts":
+        #         reqalts += 1
+        #     if x == "reqmore":
+        #         reqmore += 1
+        #     if x == "request":
+        #         request += 1
+        #     if x == "restart":
+        #         restart += 1
+
+        # dictionary = {
+        #     "ack": ack,
+        #     "affirm": affirm,
+        #     "bye": bye,
+        #     "confirm": confirm,
+        #     "deny": deny,
+        #     "hello": hello,
+        #     "inform": inform,
+        #     "negate": negate,
+        #     "null": null,
+        #     "reqalts": reqalts,
+        #     "reqmore": reqmore,
+        #     "request": request,
+        #     "restart": restart,
+        #     "repeat": repeat,
+        # }
+        # majority = max(dictionary, key=dictionary.get)
+
+        # return majority
