@@ -14,10 +14,10 @@ obj.assignClass()
 obj.createDataset()
 
 # Rule-Based Baseline
-# rule_based_baseline = RuleBasedBaseline(obj)
-# filename2 = "data/baseline_rules.json"
-# rule_based_baseline.loadRulesFile(filename2)
-# rule_based_baseline.evaluate()
+rule_based_baseline = RuleBasedBaseline(obj)
+filename2 = "data/baseline_rules.json"
+rule_based_baseline.loadRulesFile(filename2)
+rule_based_baseline.evaluate()
 
 """# ML Model 1
 decision_tree = develop(DecisionTreeModel(obj))
