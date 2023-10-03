@@ -56,12 +56,15 @@ class Model:
             for i, label in enumerate(np.unique(self.datacreator_instance.y_test))
         }
 
-    def show_results(self):
+    def show_results(self, information_per_class: bool = False):
         print(f"{self.model.__class__.__name__}:")
         print("Accuracy:", self.accuracy)
         print("Precision:", self.precision)
         print("Recall:", self.recall)
-        for label, metrics in self.class_metrics.items():
-            print(f"{label}:")
-            print(f"  Precision: {metrics['Precision']:.4f}")
-            print(f"  Recall: {metrics['Recall']:.4f}")
+
+        # print additional information about each class if wanted
+        if information_per_class:
+            for label, metrics in self.class_metrics.items():
+                print(f"{label}:")
+                print(f"  Precision: {metrics['Precision']:.4f}")
+                print(f"  Recall: {metrics['Recall']:.4f}")
