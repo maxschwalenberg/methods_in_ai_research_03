@@ -22,6 +22,7 @@ class MLModel(Model):
 
         # CountVectorizer converts a collection of text documents to a matrix of token counts
         if datacreator_instance.dataset_created:
+            print(datacreator_instance.x_train)
             vectorizer = CountVectorizer()
             bag = vectorizer.fit_transform(
                 np.concatenate(
