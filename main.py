@@ -1,5 +1,5 @@
 from source.dialog_management import DialogManagement
-from source.config import setup
+from source.config import setup, load_configuration
 from source.datacreator import Datacreator
 from source.ml_model import LogisticRegressionModel
 
@@ -21,7 +21,7 @@ logistic_regression.develop()
 logistic_regression.show_results()
 
 
-configuration = setup()
+configuration = load_configuration("output/data/dialog_config.json")
 
 
 # create the dialog

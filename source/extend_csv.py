@@ -17,15 +17,9 @@ def add_new_properties(source_csv_path: str, target_csv_path: str):
     new_stay_length_column = []
 
     for _ in range(number_of_rows):
-        new_food_column.append(
-            food_qualities[random.randint(0, len(food_qualities) - 1)]
-        )
-        new_crowdedness_column.append(
-            crowdedness[random.randint(0, len(crowdedness) - 1)]
-        )
-        new_stay_length_column.append(
-            length_stay[random.randint(0, len(length_stay) - 1)]
-        )
+        new_food_column.append(random.choice(food_qualities))
+        new_crowdedness_column.append(random.choice(crowdedness))
+        new_stay_length_column.append(random.choice(length_stay))
 
     data["FoodQuality"] = new_food_column
     data["Crowdedness"] = new_crowdedness_column
