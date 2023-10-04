@@ -2,7 +2,6 @@ import pandas as pd
 
 from source.datacreator import Datacreator
 
-# from source.baseline import RuleBasedBaseline
 from source.ml_model import DecisionTreeModel, LogisticRegressionModel
 from source.baseline import RuleBasedBaseline, MajorityClassBaseline
 
@@ -10,11 +9,9 @@ from source.baseline import RuleBasedBaseline, MajorityClassBaseline
 evaluation_results = pd.DataFrame(
     columns=["model", "duplicates_removed", "accuracy", "precision", "recall"]
 )
+
 save_results_in = "data/eval_results.csv"
-
 data_filename = "data/dialog_acts.dat"
-
-
 baseline_rules_file = "data/baseline_rules.json"
 
 remove_duplicates_options = [False, True]
