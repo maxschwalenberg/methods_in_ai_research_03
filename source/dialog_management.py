@@ -240,7 +240,7 @@ class Welcome(State):
         super().__init__(info)
 
     def dialog(self):
-        message = f"System: {self.feedback_string}Hello, how can I help you?"
+        message = f"System: {self.feedback_string}Hello, welcome to the restaurant recommender system? You can ask for restaurants by area/price range/food type. How may I help you?"
         print(message)
         if self.info.t2s:
             text_to_speech(message)
@@ -306,9 +306,20 @@ class AskArea(State):
         elif input == "bye":
             return Goodbye(self.info)
         elif (
-            input == "negate" or input == "repeat"
+            input == "negate" or input == "repeat" 
         ):  # if the user negate the ask, we should ask again
             return AskArea(self.info)
+        elif input == "deny": #if deny we delete the preferences and we go back to ask for info
+            extracted_preferences = patternMatchKeywordExtraction(
+                self.user_utterance, self.keyword_dict
+            )
+            already_existing_keys = list(self.info.extracted_preferences.keys())
+            for existing_key in already_existing_keys:
+                if existing_key in list(extracted_preferences.keys()):
+                    del extracted_preferences[existing_key]
+            self.info.extracted_preferences.update(extracted_preferences)
+
+            return AskForInformation(self.info)
         elif input == "inform":
             # extract preferences
             self.info.extracted_preferences_old = copy.deepcopy(
@@ -548,6 +559,17 @@ class Suggestion(State):
                 self.previous_suggestion_index,
                 self.user_utterance,
             )
+        elif input == "deny": #if deny we delete the preferences and we go back to ask for info
+            extracted_preferences = patternMatchKeywordExtraction(
+                self.user_utterance, self.keyword_dict
+            )
+            already_existing_keys = list(self.info.extracted_preferences.keys())
+            for existing_key in already_existing_keys:
+                if existing_key in list(extracted_preferences.keys()):
+                    del extracted_preferences[existing_key]
+            self.info.extracted_preferences.update(extracted_preferences)
+
+            return AskForInformation(self.info)
         else:
             return Suggestion(
                 self.info,
