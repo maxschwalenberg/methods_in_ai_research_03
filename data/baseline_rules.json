@@ -1,8 +1,8 @@
 {
   "rules":[
       {
-      "intent": "ack",
-      "keywords": ["kay", "okay", "thatll do", "fine"]
+      "intent": "reqalts",
+      "keywords": ["how about", "how bout", "anything else", "other"]
       },
 
       {
@@ -21,8 +21,15 @@
       },
 
       {
+        "intent": "request",
+        "keywords": ["postcode", "post code", "phone number", 
+                      "address", "please", "what",
+                      "prices"]
+      },
+
+      {
         "intent": "confirm",
-        "keywords": ["is it", "is that", "does it"]
+        "keywords": ["is it", "is that", "does it", "do they"]
       },
 
       {
@@ -36,17 +43,25 @@
       },
 
       {
+        "intent": "negate",
+        "keywords": ["no"]
+      },
+
+      {
       "intent": "inform",
       "keywords": ["looking", "any", "restaurant", 
-                    "cheap", "mediterranean", "matter", 
-                    "expensive", "food", "north", 
+                    "cheap", "mediterranean","basque",
+                    "australasian", "british", "oriental",
+                    "oriental", "moderate",
+                    "matter", "would", "want",
+                    "expensive", "food", "north",
                     "east", "south", "west", 
                     "center", "dont care"]
       },
 
       {
-        "intent": "negate",
-        "keywords": ["no"]
+        "intent": "ack",
+        "keywords": ["kay", "okay", "thatll do", "fine"]
       },
 
       {
@@ -55,18 +70,8 @@
       },
 
       {
-        "intent": "reqalts",
-        "keywords": ["how about", "anything else"]
-      },
-
-      {
         "intent": "reqmore",
         "keywords": ["more"]
-      },
-
-      {
-        "intent": "request",
-        "keywords": ["postcode", "phone number", "address", "please", "what"]
       },
 
       {

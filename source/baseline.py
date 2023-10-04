@@ -1,6 +1,7 @@
 from source.datacreator import Datacreator
 from source.model import Model
 import json
+import re
 
 class RuleBasedBaseline(Model):
     def __init__(self, datacreator_instance: Datacreator) -> None:
@@ -11,53 +12,62 @@ class RuleBasedBaseline(Model):
         file = open(filename).read()
         self.rule_data = json.loads(file)
 
-    def predict(self):
+    def predict_single_utterance(self):
         print("Enter utterance: ")
         utterance = input()
         for rule in self.rule_data["rules"]:
-            if utterance in rule["keywords"]:
-                return rule["intent"]
+            for keyword in rule["utterances"]:
+                if (re.search(r"\b" + keyword + r"\b", utterance)):
+                    print(rule["intent"])
+                    return
+        print("null")
+            
 
-    def evaluate(self, test_data=True):
-        counter = 0.0
-        correct_counter = 0.0
-        input_set = []
-
-        if test_data:
-            input_set = zip(
-                self.datacreator_instance.x_test, self.datacreator_instance.y_test
-            )
-        else:
-            input_set = zip(
-                self.datacreator_instance.x_train, self.datacreator_instance.y_train
-            )
-
-        for utterance, dialog_act in input_set:
+    def predict(self, input_list):
+        result_list = []
+        for utterance in input_list:
+            has_found = False
             for rule in self.rule_data["rules"]:
-                if (
-                    any(keyword in utterance for keyword in rule["keywords"])
-                    and dialog_act in rule["intent"]
-                ):
-                    correct_counter += 1
+                for keyword in rule["keywords"]:
+                    if (re.search(r"\b" + keyword + r"\b", utterance)):
+                        result_list.append(rule["intent"])
+                        has_found = True
+                        break
+                if(has_found):
                     break
-            counter += 1
-        print(
-            "Rule-based baseline accuracy: ",
-            str(round(correct_counter / counter * 100, 2)) + "%",
-        )
+            if(not has_found):
+                result_list.append("null")
+        self.preds = result_list     
 
-class MajorityClassCounter(Model):
+    def develop(self):
+        self.predict(self.datacreator_instance.x_test)
+        self.evaluate()
+
+class MajorityClassBaseline(Model):
 
     def __init__(self, datacreator_instance: Datacreator) -> None:
         super().__init__(datacreator_instance)
+        self.majority = None
 
-    def majorityCounter(self):
+    def findMajority(self, input_list):
         count_dict = {}
-        for x in self.datacreator_instance.y_train:
-            if x not in count_dict:
-                count_dict[x] = 1
+        for intent in input_list:
+            if intent not in count_dict:
+                count_dict[intent] = 1
             else:
-                count_dict[x] += 1
-        majority = max(count_dict, key=count_dict.get)
-        print(majority)
+                count_dict[intent] += 1
+        self.majority = max(count_dict, key=count_dict.get)
+
+    def predict_single_utterance(self):
+        print("Enter utterance: ")
+        utterance = input()
+        print(self.majority)
+
+    def predict(self, input_list):
+         self.preds = [self.majority] * len(input_list)
+
+    def develop(self):
+        self.findMajority(self.datacreator_instance.y_test)
+        self.predict(self.datacreator_instance.x_test)
+        self.evaluate()
         

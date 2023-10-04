@@ -4,6 +4,7 @@ from source.datacreator import Datacreator
 
 # from source.baseline import RuleBasedBaseline
 from source.ml_model import DecisionTreeModel, LogisticRegressionModel
+from source.baseline import RuleBasedBaseline, MajorityClassBaseline
 
 
 evaluation_results = pd.DataFrame(
@@ -27,14 +28,32 @@ for remove_duplicate in remove_duplicates_options:
     datacreator_instance.assignClass()
     datacreator_instance.createDataset()
 
-    # Baseline
-    # baseline = Baseline(datacreator_instance)
-    # baseline.evaluate()
+    # MajorityClass Baseline
+    majority_baseline = MajorityClassBaseline(datacreator_instance)
+    majority_baseline.develop()
+
+    # add results to dataframe
+    evaluation_results.loc[len(evaluation_results)] = [
+        "majority class baseline",
+        remove_duplicate,
+        majority_baseline.accuracy,
+        majority_baseline.precision,
+        majority_baseline.recall,
+    ]
 
     # Rule-Based Baseline
-    """rule_based_baseline = RuleBasedBaseline(datacreator_instance)
+    rule_based_baseline = RuleBasedBaseline(datacreator_instance)
     rule_based_baseline.loadRulesFile(baseline_rules_file)
-    rule_based_baseline.evaluate()"""
+    rule_based_baseline.develop()
+
+    # add results to dataframe
+    evaluation_results.loc[len(evaluation_results)] = [
+        "rule-based baseline",
+        remove_duplicate,
+        rule_based_baseline.accuracy,
+        rule_based_baseline.precision,
+        rule_based_baseline.recall,
+    ]
 
     # ML Model 1
     decision_tree = DecisionTreeModel(datacreator_instance)
