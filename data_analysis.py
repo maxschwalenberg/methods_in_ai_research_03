@@ -3,6 +3,7 @@ from source.ml_model import LogisticRegressionModel
 
 import matplotlib.pyplot as plt
 from collections import Counter
+import numpy as np
 
 
 # Script for data analysis to study the data and the machine learning model performance
@@ -30,6 +31,7 @@ data = {"xtestwithduplicate": datacreator_with_duplicates.x_test,
         "ytrainwithoutduplicate" :datacreator_without_duplicates.y_train,
         }
 
+# 1 - Distribution of dialogs acts 
 
 # Get word count
 word_counts_with_duplicates = Counter(data["ytestwithduplicate"])
@@ -39,7 +41,7 @@ word_counts_without_duplicates = Counter(data["ytestwithoutduplicate"])
 words_with_duplicates, frequencies_with_duplicates = zip(*word_counts_with_duplicates.items())
 words_without_duplicates, frequencies_without_duplicates = zip(*word_counts_without_duplicates.items())
 
-# Plt generate images
+# Plt generate images of Distribution of Dialog Acts
 plt.figure(figsize=(10, 6))
 plt.bar(words_with_duplicates, frequencies_with_duplicates, alpha=0.5, color='g', label='Ytest withduplicate')
 plt.bar(words_without_duplicates, frequencies_without_duplicates, alpha=0.5, color='b', label='Ytest withoutduplicate')
@@ -52,7 +54,7 @@ plt.savefig("output/images/distributionDialogActComparison.jpg")
 # Create the figure and axes for subplots
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
 
-# Plot the histogram for Ytest withduplicate and Ytest without duplicate
+# Plot the histogram for Distribution of DialogActs for Ytestwithduplicate and Ytestwithoutduplicate
 ax1.bar(words_with_duplicates, frequencies_with_duplicates, alpha=0.5, color='g')
 ax1.set(title='Frequency Histogram of Ytest withduplicate', ylabel='Frequency')
 ax1.tick_params(axis='x', rotation=90)
@@ -62,6 +64,30 @@ ax2.tick_params(axis='x', rotation=90)
 plt.tight_layout()
 plt.savefig("output/images/distributionDialogsActsSeparated.jpg")
 
+# 2 - Length of the utterances
 
+# Calculate the average length of xtest for each dialogact in ytestwithduplicate
+dialogsacts = set(data["ytestwithduplicate"])
+dialogs_lengths = {}
 
+for dialogact in dialogsacts:
+    dialogsactsindexs = [i for i, y in enumerate(data["ytestwithduplicate"]) if y == dialogact]
+    dialogs_xtest_lengths = [len(data["xtestwithduplicate"][i]) for i in dialogsactsindexs]
+    average_length = np.mean(dialogs_xtest_lengths)
+    dialogs_lengths[dialogact] = average_length
+
+xtest_lengthforall = [len(sentence) for sentence in data["xtestwithduplicate"]]
+dialogs_lengths["average"] = np.mean(xtest_lengthforall)
+
+# Create a bar chart
+plt.figure(figsize=(10, 6))
+plt.bar(dialogs_lengths.keys(), dialogs_lengths.values())
+plt.xlabel('Dialogs Acts')
+plt.ylabel('Average Length Utterances')
+plt.title('Average Length of X Test WithDuplicates for DialogAct')
+plt.xticks(rotation=45)
+plt.tight_layout()
+
+# Show or save the plot
+plt.savefig("output/images/LengthUtterances.jpg")
 
