@@ -55,7 +55,7 @@ class DialogManagement:
         file = open(filename)
         file = csv.DictReader(file)
         keyword_names = file.fieldnames[
-            2:5
+            1:4
         ]  # incongruent with preference_extraction.py
         keyword_dict = {key: set() for key in keyword_names}
 
@@ -93,30 +93,46 @@ def patternMatchKeywordExtraction(data, keyword_dict):
     temp = None
     result = {}
 
-    if temp := re.findall("(\w+) food", data):
-        result["food"] = temp[0]
+    # Keyword search
+    for key, values in keyword_dict.items():
+        for value in values:
+            if temp:= (re.findall(r"\b" + value + r"\b", data)):
+                result[key] = value 
 
-    if temp := re.findall(r"in the (\w+)|(north|south|east|west|centre)", data):
-        for match in temp:
-            if match[0]:
-                result["area"] = match[0]
-            elif match[1]:
-                result["area"] = match[1]
+    # Pattern search to find the possible misspelled keywords
 
-    if temp := re.findall(r"(\w+) priced |(expensive|cheap|moderate)", data):
-        for match in temp:
-            if match[0]:
-                result["pricerange"] = match[0]
-            elif match[1]:
-                result["pricerange"] = match[1]
+    # Check for food keyword pattern (* food)
+    # Example: "I want to eat *chinese* food"
+    if (temp := re.findall("(\w+) food", data)) and ("food" not in result):
+        for keyword in keyword_dict["food"]:
+            if levdistance(temp[0], keyword) <= 2:
+                result["food"] = keyword
 
-    if temp := re.findall("(\w+) restaurant", data):
+    # Check for area keyword pattern (in the *)
+    # Example: "I would like a restaurant in the *south* side"
+    if (temp := re.findall(r"in the (\w+)", data)) and ("area" not in result):
+        for keyword in keyword_dict["area"]:
+            if levdistance(temp[0], keyword) <= 2:
+                result["area"] = keyword
+
+    # Check for price range keyword pattern (* priced)
+    # Example: "I want the restaurant to be *cheap* priced"
+    if (temp := re.findall(r"(\w+) priced", data)) and ("pricerange" not in result):
+           for keyword in keyword_dict["pricerange"]:
+                if levdistance(temp[0], keyword) <= 2:
+                    result["pricerange"] = keyword
+ 
+    # Check for food/price range keyword pattern (* restaurant)
+    # Example: "I want a *Chinese*/*Cheap* restaurant"
+    if (temp := re.findall("(\w+) restaurant", data)) and ("food" or "pricerange" not in result):
         for key, values in keyword_dict.items():
             for value in values:
                 if levdistance(temp[0], value) <= 2:
                     result[key] = value
 
-    if temp := re.findall("any (\w+)", data):
+    # Check for any keyword pattern (any *)
+    # Example: "I want any *food*/*area*/*pricerange*"
+    if (temp := re.findall("any (\w+)", data)) and (not result):
         for key, _ in keyword_dict.items():
             if levdistance(temp[0], key) <= 2:
                 result[key] = "Any"
