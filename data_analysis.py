@@ -7,7 +7,6 @@ from collections import Counter
 import numpy as np
 
 
-
 # Script for data analysis to study the data and the machine learning model performance
 
 filename = "data/dialog_acts.dat"
@@ -129,13 +128,28 @@ plt.xlabel('Frequency')
 plt.tight_layout()
 plt.savefig("output/images/most_words_used.jpg")
 
-# 
-dialogsacts = set(data["ytestwithduplicate"])
-dialogs_lengths = {}
+# 5 - Words per Dialog Act
 
-# We get the lengths for each dialog act, then we calculate the average and add it to dialogs_lengths
+
+dialogsacts = set(data["ytestwithduplicate"])
+
+top_words_by_dialog_act = {}
+
+def get_top_words(text, n):
+    word_counts = Counter(text.split())
+    top_words = dict(word_counts.most_common(n))
+    return top_words
+
 for dialogact in dialogsacts:
-    dialogsactsindexs = [i for i, y in enumerate(data["ytestwithduplicate"]) if y == dialogact]
-    dialogs_xtest_lengths = [len(data["xtestwithduplicate"][i]) for i in dialogsactsindexs]
-    average_length = np.mean(dialogs_xtest_lengths)
-    dialogs_lengths[dialogact] = average_length
+    filtered_phrases = [data["xtestwithduplicate"][i] for i, y in enumerate(data["ytestwithduplicate"]) if y == dialogact]
+    text_for_dialogact = " ".join(filtered_phrases)
+    number_of_words = 5
+    top_words = get_top_words(text_for_dialogact, number_of_words)
+    
+    top_words_by_dialog_act[dialogact] = top_words
+
+# print(top_words_by_dialog_act)
+
+# Would be useful to show the top words by a dialgo act?
+# Example: 
+# request': {'the': 483, 'number': 374, 'phone': 371, 'address': 361, 'what': 198}, 'hello': {'hi': 8, 'hello': 6, 'im': 6, 'looking': 6, 'for': 6}
