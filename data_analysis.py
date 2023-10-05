@@ -66,9 +66,17 @@ ax2.tick_params(axis='x', rotation=90)
 plt.tight_layout()
 plt.savefig("output/images/distribution_dialogs_acts_separated.jpg")
 
+
+plt.figure(figsize=(6, 6))
+plt.pie(frequencies_with_duplicates, labels=words_with_duplicates, autopct='%1.1f%%', startangle=140)
+plt.title("Distribution of Dialog Acts (with duplicates)")
+plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+plt.savefig("output/images/pie_chart_with_duplicates.jpg")
+
 # 2 - Length of the utterances
 
 # Calculate the average length of xtest for each dialogact in ytestwithduplicate
+
 dialogsacts = set(data["ytestwithduplicate"])
 dialogs_lengths = {}
 
@@ -122,3 +130,12 @@ plt.tight_layout()
 plt.savefig("output/images/most_words_used.jpg")
 
 # 
+dialogsacts = set(data["ytestwithduplicate"])
+dialogs_lengths = {}
+
+# We get the lengths for each dialog act, then we calculate the average and add it to dialogs_lengths
+for dialogact in dialogsacts:
+    dialogsactsindexs = [i for i, y in enumerate(data["ytestwithduplicate"]) if y == dialogact]
+    dialogs_xtest_lengths = [len(data["xtestwithduplicate"][i]) for i in dialogsactsindexs]
+    average_length = np.mean(dialogs_xtest_lengths)
+    dialogs_lengths[dialogact] = average_length
