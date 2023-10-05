@@ -1,5 +1,4 @@
 import pandas as pd
-import random
 import json
 
 
@@ -33,6 +32,54 @@ class RestaurantLookup:
 
         return result_df
 
+    @staticmethod
+    def match_rule(rules, row):
+        is_match = False
+
+        # values that are leading to a inference being made
+        explanations = []
+
+        for rule in rules:
+            conditions_list = []
+
+            for defined_conditions_key in rule:
+                if defined_conditions_key == "consequence":
+                    continue
+
+                defined_condition_value = rule[defined_conditions_key]
+                actual_value = row[defined_conditions_key]
+
+                if defined_condition_value == actual_value:
+                    conditions_list.append(True)
+                else:
+                    conditions_list.append(False)
+
+            # check if all conditions are fulfilled
+            all_conditions_fullfilled = all(conditions_list)
+            if all_conditions_fullfilled:
+                # check consequence
+                consequence = rule["consequence"]
+
+                if consequence:
+                    is_match = True
+
+                    # add values to explanations list
+                    explanations += [v for k, v in rule.items() if k != "consequence"]
+                else:
+                    # at this point the other rules dont need to be checked anymore because it is proven that the additional requirements doesnt hold
+                    is_match = False
+                    break
+
+        if is_match:
+            # also add the additional explanations if the consequence is false
+            for rule in rules:
+                if not rule["consequence"]:
+                    explanations += [
+                        f"not {v}" for k, v in rule.items() if k != "consequence"
+                    ]
+
+        return is_match, explanations
+
     def inference(
         self, results_df: pd.DataFrame, additional_requirement: str
     ) -> pd.DataFrame:
@@ -46,37 +93,28 @@ class RestaurantLookup:
             # for this, loop through all rules
             # if a "false consequence" is found - immediately continue
 
-            is_match = False
-            for rule in rules:
-                conditions_list = []
-
-                for defined_conditions_key in rule:
-                    if defined_conditions_key == "consequence":
-                        continue
-
-                    defined_condition_value = rule[defined_conditions_key]
-                    actual_value = row[defined_conditions_key]
-
-                    if defined_condition_value == actual_value:
-                        conditions_list.append(True)
-                    else:
-                        conditions_list.append(False)
-
-                # check if all conditions are fulfilled
-                all_conditions_fullfilled = all(conditions_list)
-                if all_conditions_fullfilled:
-                    # check consequence
-                    consequence = rule["consequence"]
-
-                    if consequence:
-                        is_match = True
-                    else:
-                        # at this point the other rules dont need to be checked anymore because it is proven that the additional requirements doesnt hold
-                        is_match = False
-                        break
+            is_match, _ = self.match_rule(rules, row)
 
             if is_match:
                 matches.append(i)
 
         results_df = results_df.iloc[matches]
         return results_df
+
+    def explain_inference(self, row: pd.DataFrame, additional_requirement: str):
+        _, explanation = self.match_rule(
+            self.additional_requirement_rules[additional_requirement], row
+        )
+
+        return explanation
+
+
+filename = "data/new_restaurant_info.csv"
+restaurant_lookup = RestaurantLookup(filename)
+
+res = restaurant_lookup.lookup(
+    {"pricerange": "cheap", "additional_requirement": "romantic"}
+)
+explanation = restaurant_lookup.explain_inference(res.iloc[0], "romantic")
+print(explanation)
+print(res.iloc[0])
