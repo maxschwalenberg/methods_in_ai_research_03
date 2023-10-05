@@ -1,10 +1,14 @@
 import pandas as pd
 import random
+import json
 
 
 class RestaurantLookup:
     def __init__(self, restaurant_info_csv_path: str) -> None:
         self.data = pd.read_csv(restaurant_info_csv_path)
+        self.additional_requirement_rules = json.load(
+            open("output/data/additional_requirements.json")
+        )
 
     def lookup(self, preferences: dict) -> pd.DataFrame:
         preferences_keys = list(preferences.keys())
@@ -32,40 +36,47 @@ class RestaurantLookup:
     def inference(
         self, results_df: pd.DataFrame, additional_requirement: str
     ) -> pd.DataFrame:
-        rowsdrop = []
+        # query rule defined in an external file as a dict
+        rules = self.additional_requirement_rules[additional_requirement]
+        matches = []
+
         for i in range(len(results_df)):
             row = results_df.iloc[i]
-            price = row["pricerange"]
-            area = row["area"]
-            food = row["food"]
-            quality = row["FoodQuality"]
-            busyness = row["Crowdedness"]
-            length_stay = row["StayLength"]
+            # check if the additional requirement is fulfilled
+            # for this, loop through all rules
+            # if a "false consequence" is found - immediately continue
 
-            if additional_requirement == "touristic":
-                if food == "romanian":
-                    rowsdrop.append(i)
-                # cheap AND good -> negate -> not cheap or not good
-                if price != "cheap" or quality != "good":
-                    rowsdrop.append(i)
+            is_match = False
+            for rule in rules:
+                conditions_list = []
 
-            elif additional_requirement == "assigned seats":
-                if busyness != "busy":
-                    rowsdrop.append(i)
+                for defined_conditions_key in rule:
+                    if defined_conditions_key == "consequence":
+                        continue
 
-            elif additional_requirement == "children":
-                if length_stay == "long":
-                    rowsdrop.append(i)
+                    defined_condition_value = rule[defined_conditions_key]
+                    actual_value = row[defined_conditions_key]
 
-            elif additional_requirement == "romantic":
-                if busyness == "busy":
-                    rowsdrop.append(i)
+                    if defined_condition_value == actual_value:
+                        conditions_list.append(True)
+                    else:
+                        conditions_list.append(False)
 
-                if length_stay != "long":
-                    rowsdrop.append(i)
+                # check if all conditions are fulfilled
+                all_conditions_fullfilled = all(conditions_list)
+                if all_conditions_fullfilled:
+                    # check consequence
+                    consequence = rule["consequence"]
 
-        # make rowsdrop only contain unique indices
-        rowsdrop = list(set(rowsdrop))
+                    if consequence:
+                        is_match = True
+                    else:
+                        # at this point the other rules dont need to be checked anymore because it is proven that the additional requirements doesnt hold
+                        is_match = False
+                        break
 
-        results_df = results_df.drop(results_df.index[rowsdrop])
+            if is_match:
+                matches.append(i)
+
+        results_df = results_df.iloc[matches]
         return results_df
