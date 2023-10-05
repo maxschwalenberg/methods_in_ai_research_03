@@ -1,0 +1,35 @@
+{
+    "romantic": [
+        {
+            "Crowdedness": "busy",
+            "consequence": false
+        },
+        {
+            "StayLength": "long",
+            "consequence": true
+        }
+    ],
+    "touristic": [
+        {
+            "food": "romanian",
+            "consequence": false
+        },
+        {
+            "pricerange": "cheap",
+            "FoodQuality": "good",
+            "consequence": true
+        }
+    ],
+    "children": [
+        {
+            "StayLength": "long",
+            "consequence": false
+        }
+    ],
+    "assigned seats": [
+        {
+            "Crowdedness": "busy",
+            "consequence": true
+        }
+    ]
+}
