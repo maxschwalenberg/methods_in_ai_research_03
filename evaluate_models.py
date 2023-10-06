@@ -1,6 +1,8 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+from wordcloud import WordCloud
+
 
 from source.datacreator import Datacreator
 
@@ -128,7 +130,21 @@ plt.title('Error in predictions (Baseline)')
 plt.tight_layout()
 plt.savefig("output/images/error_predictions_models.jpg")
 
+# Function to create a word cloud from a list of errors for each model
+def create_word_cloud_subplot(errors, title, position):
+    wordcloud = WordCloud(width=200, height=200, background_color='white').generate(' '.join(errors))
+    plt.subplot(1, 3, position)
+    plt.imshow(wordcloud, interpolation='bilinear')
+    plt.axis('off')
+    plt.title(title)
 
+plt.figure(figsize=(15, 5))
 
+create_word_cloud_subplot(x_testerrors_logistic, 'Logistic Regression Errors', 1)
+create_word_cloud_subplot(x_testerrors_tree, 'Decision Tree Errors', 2)
+create_word_cloud_subplot(x_testerrors_baseline, 'Baseline Model Errors', 3)
+
+plt.tight_layout()
+plt.savefig("output/images/error_words_models.jpg")
 
 
