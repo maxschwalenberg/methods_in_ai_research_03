@@ -92,7 +92,7 @@ def pattern_match_request(data):
         return None
 
 
-def pattern_match_keyword_extraction(data, keyword_dict):
+def patternMatchKeywordExtraction(data, keyword_dict, context : str):
     data = data.lower()
     temp = None
     result = {}
@@ -106,28 +106,28 @@ def pattern_match_keyword_extraction(data, keyword_dict):
     # Pattern search to find the possible misspelled keywords
 
     # Check for food keyword pattern (* food)
-    # Example: "I want to eat *chinese* food"
+    # Example: "I want to eat (chinese) food"
     if (temp := re.findall("(\w+) food", data)) and ("food" not in result):
         for keyword in keyword_dict["food"]:
             if levdistance(temp[0], keyword) <= 2:
                 result["food"] = keyword
 
     # Check for area keyword pattern (in the *)
-    # Example: "I would like a restaurant in the *south* side"
+    # Example: "I would like a restaurant in the (south) side"
     if (temp := re.findall(r"in the (\w+)", data)) and ("area" not in result):
         for keyword in keyword_dict["area"]:
             if levdistance(temp[0], keyword) <= 2:
                 result["area"] = keyword
 
     # Check for price range keyword pattern (* priced)
-    # Example: "I want the restaurant to be *cheap* priced"
+    # Example: "I want the restaurant to be (cheap) priced"
     if (temp := re.findall(r"(\w+) priced", data)) and ("pricerange" not in result):
         for keyword in keyword_dict["pricerange"]:
             if levdistance(temp[0], keyword) <= 2:
                 result["pricerange"] = keyword
 
     # Check for food/price range keyword pattern (* restaurant)
-    # Example: "I want a *Chinese*/*Cheap* restaurant"
+    # Example: "I want a (Chinese)/(Cheap) restaurant"
     if (temp := re.findall("(\w+) restaurant", data)) and (
         "food" or "pricerange" not in result
     ):
@@ -137,11 +137,15 @@ def pattern_match_keyword_extraction(data, keyword_dict):
                     result[key] = value
 
     # Check for any keyword pattern (any *)
-    # Example: "I want any *food*/*area*/*pricerange*"
-    if (temp := re.findall("any (\w+)", data)) and (not result):
-        for key, _ in keyword_dict.items():
-            if levdistance(temp[0], key) <= 2:
-                result[key] = "Any"
+    # Example: "I want any (food)/(area)/(pricerange)"
+    if (re.search(r"\b" + "any" + r"\b", data) and (len(result) != 3)):
+        if (temp := re.findall("any (\w+)", data)):
+            for word in temp:
+                for key in keyword_dict.keys():
+                    if levdistance(word, key) <= 2:
+                        result[key] = "Any"
+        elif (context in keyword_dict.keys()):
+             result[context] = "Any"
 
     return result
 
@@ -282,8 +286,8 @@ class Welcome(State):
             self.info.extracted_preferences_old = copy.deepcopy(
                 self.info.extracted_preferences
             )
-            self.info.extracted_preferences = pattern_match_keyword_extraction(
-                self.user_utterance, self.keyword_dict
+            self.info.extracted_preferences = patternMatchKeywordExtraction(
+                self.user_utterance, self.keyword_dict, None
             )
             return AskForInformation(self.info)
 
@@ -335,8 +339,8 @@ class AskArea(State):
         elif (
             input == "deny"
         ):  # if deny we delete the preferences and we go back to ask for info
-            extracted_preferences = pattern_match_keyword_extraction(
-                self.user_utterance, self.keyword_dict
+            extracted_preferences = patternMatchKeywordExtraction(
+                self.user_utterance, self.keyword_dict, "area"
             )
             already_existing_keys = list(self.info.extracted_preferences.keys())
             for existing_key in already_existing_keys:
@@ -354,14 +358,14 @@ class AskArea(State):
             # if we want to allow preferences to be overwritten
             if self.info.allow_preference_change:
                 self.info.extracted_preferences.update(
-                    pattern_match_keyword_extraction(
-                        self.user_utterance, self.keyword_dict
+                    patternMatchKeywordExtraction(
+                        self.user_utterance, self.keyword_dict, "area"
                     )
                 )
             # else, first delete all the entries of the extracted preferences that are already present in the dict
             else:
-                extracted_preferences = pattern_match_keyword_extraction(
-                    self.user_utterance, self.keyword_dict
+                extracted_preferences = patternMatchKeywordExtraction(
+                    self.user_utterance, self.keyword_dict, "area"
                 )
                 already_existing_keys = list(self.info.extracted_preferences.keys())
                 for existing_key in already_existing_keys:
@@ -408,14 +412,14 @@ class AskPrice(State):
             # if we want to allow preferences to be overwritten
             if self.info.allow_preference_change:
                 self.info.extracted_preferences.update(
-                    pattern_match_keyword_extraction(
-                        self.user_utterance, self.keyword_dict
+                    patternMatchKeywordExtraction(
+                        self.user_utterance, self.keyword_dict, "pricerange"
                     )
                 )
             # else, first delete all the entries of the extracted preferences that are already present in the dict
             else:
-                extracted_preferences = pattern_match_keyword_extraction(
-                    self.user_utterance, self.keyword_dict
+                extracted_preferences = patternMatchKeywordExtraction(
+                    self.user_utterance, self.keyword_dict, "pricerange"
                 )
                 already_existing_keys = list(self.info.extracted_preferences.keys())
                 for existing_key in already_existing_keys:
@@ -460,14 +464,14 @@ class AskType(State):
             # if we want to allow preferences to be overwritten
             if self.info.allow_preference_change:
                 self.info.extracted_preferences.update(
-                    pattern_match_keyword_extraction(
-                        self.user_utterance, self.keyword_dict
+                    patternMatchKeywordExtraction(
+                        self.user_utterance, self.keyword_dict, "food"
                     )
                 )
             # else, first delete all the entries of the extracted preferences that are already present in the dict
             else:
-                extracted_preferences = pattern_match_keyword_extraction(
-                    self.user_utterance, self.keyword_dict
+                extracted_preferences = patternMatchKeywordExtraction(
+                    self.user_utterance, self.keyword_dict, "food"
                 )
                 already_existing_keys = list(self.info.extracted_preferences.keys())
                 for existing_key in already_existing_keys:
@@ -591,8 +595,8 @@ class Suggestion(State):
         elif (
             input == "deny"
         ):  # if deny we delete the preferences and we go back to ask for info
-            extracted_preferences = pattern_match_keyword_extraction(
-                self.user_utterance, self.keyword_dict
+            extracted_preferences = patternMatchKeywordExtraction(
+                self.user_utterance, self.keyword_dict, None
             )
             already_existing_keys = list(self.info.extracted_preferences.keys())
             for existing_key in already_existing_keys:
