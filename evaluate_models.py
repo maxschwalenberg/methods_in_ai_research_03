@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from wordcloud import WordCloud
+from source.config import load_file_paths_configuration
 
 
 from source.datacreator import Datacreator
@@ -9,14 +10,13 @@ from source.datacreator import Datacreator
 from source.ml_model import DecisionTreeModel, LogisticRegressionModel
 from source.baseline import RuleBasedBaseline, MajorityClassBaseline
 
+filenames_config = load_file_paths_configuration("output/data/file_paths_config.json")
+
 
 evaluation_results = pd.DataFrame(
     columns=["model", "duplicates_removed", "accuracy", "precision", "recall"]
 )
 
-save_results_in = "data/eval_results.csv"
-data_filename = "data/dialog_acts.dat"
-baseline_rules_file = "data/baseline_rules.json"
 
 remove_duplicates_options = [False, True]
 # loop through the different two datasets and evaluate all 4 models
@@ -25,7 +25,7 @@ for remove_duplicate in remove_duplicates_options:
 
     # load input data for both datacreator instances
     # and process the data to create the final dataset
-    datacreator_instance.openfile(data_filename)
+    datacreator_instance.openfile(filenames_config.dialog_acts_path)
     datacreator_instance.assign_class()
     datacreator_instance.create_dataset()
 
@@ -44,7 +44,7 @@ for remove_duplicate in remove_duplicates_options:
 
     # Rule-Based Baseline
     rule_based_baseline = RuleBasedBaseline(datacreator_instance)
-    rule_based_baseline.load_rules_file(baseline_rules_file)
+    rule_based_baseline.load_rules_file(filenames_config.baseline_rules_path)
     rule_based_baseline.develop()
 
     # add results to dataframe
@@ -83,8 +83,8 @@ for remove_duplicate in remove_duplicates_options:
     ]
 
 
-evaluation_results.to_csv(save_results_in)
-print(f"Save evaluation results to {save_results_in}")
+evaluation_results.to_csv(filenames_config.evaluation_results_path)
+print(f"Save evaluation results to {filenames_config.evaluation_results_path}")
 
 
 # Error Analysis

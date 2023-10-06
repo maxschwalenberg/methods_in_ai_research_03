@@ -1,0 +1,10 @@
+{
+    "dialog_acts_path": "data/dialog_acts.dat",
+    "all_dialogs_path": "data/all_dialogs.txt",
+    "restaurant_info_path": "data/restaurant_info.csv",
+    "extended_restaurant_info_path": "output/data/new_restaurant_info.csv",
+    "evaluation_results_path": "output/data/evaluation_results.csv",
+    "baseline_rules_path": "data/baseline_rules.json",
+    "additional_requirement_rules_path": "output/data/additional_requirements.json",
+    "dialog_config_path": "output/data/dialog_config.json"
+}
