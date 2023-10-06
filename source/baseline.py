@@ -3,6 +3,7 @@ from source.model import Model
 import json
 import re
 
+
 class RuleBasedBaseline(Model):
     def __init__(self, datacreator_instance: Datacreator) -> None:
         super().__init__(datacreator_instance)
@@ -17,11 +18,10 @@ class RuleBasedBaseline(Model):
         utterance = input()
         for rule in self.rule_data["rules"]:
             for keyword in rule["utterances"]:
-                if (re.search(r"\b" + keyword + r"\b", utterance)):
+                if re.search(r"\b" + keyword + r"\b", utterance):
                     print(rule["intent"])
                     return
         print("null")
-            
 
     def predict(self, input_list):
         result_list = []
@@ -29,22 +29,22 @@ class RuleBasedBaseline(Model):
             has_found = False
             for rule in self.rule_data["rules"]:
                 for keyword in rule["keywords"]:
-                    if (re.search(r"\b" + keyword + r"\b", utterance)):
+                    if re.search(r"\b" + keyword + r"\b", utterance):
                         result_list.append(rule["intent"])
                         has_found = True
                         break
-                if(has_found):
+                if has_found:
                     break
-            if(not has_found):
+            if not has_found:
                 result_list.append("null")
-        self.preds = result_list     
+        self.preds = result_list
 
     def develop(self):
         self.predict(self.datacreator_instance.x_test)
         self.evaluate()
 
-class MajorityClassBaseline(Model):
 
+class MajorityClassBaseline(Model):
     def __init__(self, datacreator_instance: Datacreator) -> None:
         super().__init__(datacreator_instance)
         self.majority = None
@@ -60,14 +60,15 @@ class MajorityClassBaseline(Model):
 
     def predict_single_utterance(self):
         print("Enter utterance: ")
-        utterance = input()
+
+        # because we predict the majority anyways we can disregard the input
+        _ = input()
         print(self.majority)
 
     def predict(self, input_list):
-         self.preds = [self.majority] * len(input_list)
+        self.preds = [self.majority] * len(input_list)
 
     def develop(self):
         self.findMajority(self.datacreator_instance.y_test)
         self.predict(self.datacreator_instance.x_test)
         self.evaluate()
-        

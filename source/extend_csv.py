@@ -26,3 +26,7 @@ def add_new_properties(source_csv_path: str, target_csv_path: str):
     data["StayLength"] = new_stay_length_column
 
     data.to_csv(target_csv_path, index=False)
+
+
+if __name__ == "__main__":
+    add_new_properties("data/restaurant_info.csv", "data/new_restaurant_info.csv")
