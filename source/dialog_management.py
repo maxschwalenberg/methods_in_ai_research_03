@@ -70,7 +70,8 @@ class DialogManagement:
 def text_to_speech(message: str):
     # remove system string
     if "System:" in message:
-        message.replace("System:", "")
+        message = message.replace("System:", "")
+
     engine.say(message)
     # play the speech
     engine.runAndWait()
