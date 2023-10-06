@@ -81,3 +81,13 @@ for remove_duplicate in remove_duplicates_options:
 
 evaluation_results.to_csv(save_results_in)
 print(f"Save evaluation results to {save_results_in}")
+
+
+# Error Analysis
+
+incorrect_preds_logistic, x_testerrors_logistic, correct_ytest_logistic = logistic_regression.get_errors()
+incorrect_preds_tree, x_testerrors_tree, correct_ytest_tree = decision_tree.get_errors()
+incorrect_preds_gaseline, x_testerrors_baseline, correct_ytest_baseline = rule_based_baseline.get_errors()
+
+
+
