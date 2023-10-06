@@ -69,7 +69,7 @@ class Model:
                 print(f"  Precision: {metrics['Precision']:.4f}")
                 print(f"  Recall: {metrics['Recall']:.4f}")
 
-    def get_errors (self):
+    def get_errors(self):
         x_test = self.datacreator_instance.x_test
         y_test = self.datacreator_instance.y_test
         preds = self.preds

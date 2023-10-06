@@ -26,8 +26,8 @@ for remove_duplicate in remove_duplicates_options:
     # load input data for both datacreator instances
     # and process the data to create the final dataset
     datacreator_instance.openfile(data_filename)
-    datacreator_instance.assignClass()
-    datacreator_instance.createDataset()
+    datacreator_instance.assign_class()
+    datacreator_instance.create_dataset()
 
     # MajorityClass Baseline
     majority_baseline = MajorityClassBaseline(datacreator_instance)
@@ -44,7 +44,7 @@ for remove_duplicate in remove_duplicates_options:
 
     # Rule-Based Baseline
     rule_based_baseline = RuleBasedBaseline(datacreator_instance)
-    rule_based_baseline.loadRulesFile(baseline_rules_file)
+    rule_based_baseline.load_rules_file(baseline_rules_file)
     rule_based_baseline.develop()
 
     # add results to dataframe
@@ -89,62 +89,92 @@ print(f"Save evaluation results to {save_results_in}")
 
 # Error Analysis
 
-incorrect_preds_logistic, x_testerrors_logistic, correct_ytest_logistic = logistic_regression.get_errors()
+(
+    incorrect_preds_logistic,
+    x_testerrors_logistic,
+    correct_ytest_logistic,
+) = logistic_regression.get_errors()
 incorrect_preds_tree, x_testerrors_tree, correct_ytest_tree = decision_tree.get_errors()
-incorrect_preds_baseline, x_testerrors_baseline, correct_ytest_baseline = rule_based_baseline.get_errors()
+(
+    incorrect_preds_baseline,
+    x_testerrors_baseline,
+    correct_ytest_baseline,
+) = rule_based_baseline.get_errors()
 
 # Unique labels (each dialog act) and we create a graphic for each model
-dialogs_acts = np.unique(np.concatenate([correct_ytest_logistic, correct_ytest_tree, correct_ytest_baseline]))
+dialogs_acts = np.unique(
+    np.concatenate([correct_ytest_logistic, correct_ytest_tree, correct_ytest_baseline])
+)
 plt.figure(figsize=(12, 6))
 
 # Logistic Regression
 plt.subplot(131)
-plt.hist(incorrect_preds_logistic, bins=len(dialogs_acts), alpha=0.5, color='red', label='Incorrect (Logistic)')
+plt.hist(
+    incorrect_preds_logistic,
+    bins=len(dialogs_acts),
+    alpha=0.5,
+    color="red",
+    label="Incorrect (Logistic)",
+)
 plt.xticks(range(len(dialogs_acts)), dialogs_acts)
-plt.xticks(rotation=90) 
-plt.xlabel('Dialog Act')
-plt.ylabel('Frequency')
+plt.xticks(rotation=90)
+plt.xlabel("Dialog Act")
+plt.ylabel("Frequency")
 plt.legend()
-plt.title('Error in predictions (Logistic)')
+plt.title("Error in predictions (Logistic)")
 
 # Binary Trees
 plt.subplot(132)
-plt.hist(incorrect_preds_tree, bins=len(dialogs_acts), alpha=0.5, color='blue', label='Incorrect (Tree)')
+plt.hist(
+    incorrect_preds_tree,
+    bins=len(dialogs_acts),
+    alpha=0.5,
+    color="blue",
+    label="Incorrect (Tree)",
+)
 plt.xticks(range(len(dialogs_acts)), dialogs_acts)
-plt.xticks(rotation=90) 
-plt.xlabel('Dialog Act')
-plt.ylabel('Frequency ')
+plt.xticks(rotation=90)
+plt.xlabel("Dialog Act")
+plt.ylabel("Frequency ")
 plt.legend()
-plt.title('Error in predictions (Tree)')
+plt.title("Error in predictions (Tree)")
 
 # Baseline Model
 plt.subplot(133)
-plt.hist(incorrect_preds_baseline, bins=len(dialogs_acts), alpha=0.5, color='green', label='Incorrect (Baseline)')
+plt.hist(
+    incorrect_preds_baseline,
+    bins=len(dialogs_acts),
+    alpha=0.5,
+    color="green",
+    label="Incorrect (Baseline)",
+)
 plt.xticks(range(len(dialogs_acts)), dialogs_acts)
-plt.xticks(rotation=90) 
-plt.xlabel('Dialog Act')
-plt.ylabel('Frequency')
+plt.xticks(rotation=90)
+plt.xlabel("Dialog Act")
+plt.ylabel("Frequency")
 plt.legend()
-plt.title('Error in predictions (Baseline)')
+plt.title("Error in predictions (Baseline)")
 
 plt.tight_layout()
 plt.savefig("output/images/error_predictions_models.jpg")
 
+
 # Function to create a word cloud from a list of errors for each model
 def create_word_cloud_subplot(errors, title, position):
-    wordcloud = WordCloud(width=200, height=200, background_color='white').generate(' '.join(errors))
+    wordcloud = WordCloud(width=200, height=200, background_color="white").generate(
+        " ".join(errors)
+    )
     plt.subplot(1, 3, position)
-    plt.imshow(wordcloud, interpolation='bilinear')
-    plt.axis('off')
+    plt.imshow(wordcloud, interpolation="bilinear")
+    plt.axis("off")
     plt.title(title)
+
 
 plt.figure(figsize=(15, 5))
 
-create_word_cloud_subplot(x_testerrors_logistic, 'Logistic Regression Errors', 1)
-create_word_cloud_subplot(x_testerrors_tree, 'Decision Tree Errors', 2)
-create_word_cloud_subplot(x_testerrors_baseline, 'Baseline Model Errors', 3)
+create_word_cloud_subplot(x_testerrors_logistic, "Logistic Regression Errors", 1)
+create_word_cloud_subplot(x_testerrors_tree, "Decision Tree Errors", 2)
+create_word_cloud_subplot(x_testerrors_baseline, "Baseline Model Errors", 3)
 
 plt.tight_layout()
 plt.savefig("output/images/error_words_models.jpg")
-
-

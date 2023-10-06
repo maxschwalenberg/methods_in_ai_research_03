@@ -1,5 +1,5 @@
 from source.dialog_management import DialogManagement
-from source.config import setup, load_configuration
+from source.config import load_configuration
 from source.datacreator import Datacreator
 from source.ml_model import LogisticRegressionModel
 
@@ -11,8 +11,8 @@ datacreator_with_duplicates = Datacreator(False)
 # load input data for both datacreator instances
 # and process the data to create the final dataset
 datacreator_with_duplicates.openfile(filename)
-datacreator_with_duplicates.assignClass()
-datacreator_with_duplicates.createDataset()
+datacreator_with_duplicates.assign_class()
+datacreator_with_duplicates.create_dataset()
 
 
 # fit ML Model

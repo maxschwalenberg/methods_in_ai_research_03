@@ -3,9 +3,7 @@ import random
 import re
 import copy
 import time
-import os
 from Levenshtein import distance as levdistance
-from gtts import gTTS
 import pyttsx3
 
 from source.model import Model
@@ -78,7 +76,7 @@ def text_to_speech(message: str):
 
 
 # need to add postcode?
-def patternMatchRequest(data):
+def pattern_match_request(data):
     data = data.lower()
 
     if re.findall("phone", data) != []:
@@ -89,7 +87,7 @@ def patternMatchRequest(data):
         return None
 
 
-def patternMatchKeywordExtraction(data, keyword_dict):
+def pattern_match_keyword_extraction(data, keyword_dict):
     data = data.lower()
     temp = None
     result = {}
@@ -143,7 +141,7 @@ def patternMatchKeywordExtraction(data, keyword_dict):
     return result
 
 
-def additionalKeywordExtraction(data):
+def additional_keyword_extraction(data):
     result = {}
     add_list = [
         "touristic",
@@ -278,7 +276,7 @@ class Welcome(State):
             self.info.extracted_preferences_old = copy.deepcopy(
                 self.info.extracted_preferences
             )
-            self.info.extracted_preferences = patternMatchKeywordExtraction(
+            self.info.extracted_preferences = pattern_match_keyword_extraction(
                 self.user_utterance, self.keyword_dict
             )
             return AskForInformation(self.info)
@@ -331,7 +329,7 @@ class AskArea(State):
         elif (
             input == "deny"
         ):  # if deny we delete the preferences and we go back to ask for info
-            extracted_preferences = patternMatchKeywordExtraction(
+            extracted_preferences = pattern_match_keyword_extraction(
                 self.user_utterance, self.keyword_dict
             )
             already_existing_keys = list(self.info.extracted_preferences.keys())
@@ -350,13 +348,13 @@ class AskArea(State):
             # if we want to allow preferences to be overwritten
             if self.info.allow_preference_change:
                 self.info.extracted_preferences.update(
-                    patternMatchKeywordExtraction(
+                    pattern_match_keyword_extraction(
                         self.user_utterance, self.keyword_dict
                     )
                 )
             # else, first delete all the entries of the extracted preferences that are already present in the dict
             else:
-                extracted_preferences = patternMatchKeywordExtraction(
+                extracted_preferences = pattern_match_keyword_extraction(
                     self.user_utterance, self.keyword_dict
                 )
                 already_existing_keys = list(self.info.extracted_preferences.keys())
@@ -404,13 +402,13 @@ class AskPrice(State):
             # if we want to allow preferences to be overwritten
             if self.info.allow_preference_change:
                 self.info.extracted_preferences.update(
-                    patternMatchKeywordExtraction(
+                    pattern_match_keyword_extraction(
                         self.user_utterance, self.keyword_dict
                     )
                 )
             # else, first delete all the entries of the extracted preferences that are already present in the dict
             else:
-                extracted_preferences = patternMatchKeywordExtraction(
+                extracted_preferences = pattern_match_keyword_extraction(
                     self.user_utterance, self.keyword_dict
                 )
                 already_existing_keys = list(self.info.extracted_preferences.keys())
@@ -456,13 +454,13 @@ class AskType(State):
             # if we want to allow preferences to be overwritten
             if self.info.allow_preference_change:
                 self.info.extracted_preferences.update(
-                    patternMatchKeywordExtraction(
+                    pattern_match_keyword_extraction(
                         self.user_utterance, self.keyword_dict
                     )
                 )
             # else, first delete all the entries of the extracted preferences that are already present in the dict
             else:
-                extracted_preferences = patternMatchKeywordExtraction(
+                extracted_preferences = pattern_match_keyword_extraction(
                     self.user_utterance, self.keyword_dict
                 )
                 already_existing_keys = list(self.info.extracted_preferences.keys())
@@ -504,11 +502,13 @@ class AskForAdditionalInformation(State):
             # if we want to allow preferences to be overwritten
             if self.info.allow_preference_change:
                 self.info.extracted_preferences.update(
-                    additionalKeywordExtraction(self.user_utterance)
+                    additional_keyword_extraction(self.user_utterance)
                 )
             # else, first delete all the entries of the extracted preferences that are already present in the dict
             else:
-                extracted_preferences = additionalKeywordExtraction(self.user_utterance)
+                extracted_preferences = additional_keyword_extraction(
+                    self.user_utterance
+                )
                 already_existing_keys = list(self.info.extracted_preferences.keys())
                 for existing_key in already_existing_keys:
                     if existing_key in list(extracted_preferences.keys()):
@@ -586,7 +586,7 @@ class Suggestion(State):
         elif (
             input == "deny"
         ):  # if deny we delete the preferences and we go back to ask for info
-            extracted_preferences = patternMatchKeywordExtraction(
+            extracted_preferences = pattern_match_keyword_extraction(
                 self.user_utterance, self.keyword_dict
             )
             already_existing_keys = list(self.info.extracted_preferences.keys())
@@ -618,7 +618,7 @@ class GiveDetails(State):
         self.request_utterance = request_utterance
 
     def dialog(self):
-        request_type = patternMatchRequest(self.request_utterance)
+        request_type = pattern_match_request(self.request_utterance)
 
         if request_type == "phone":
             message = f"System: {self.feedback_string}The phone number of this restaurant is: {self.suggestions[self.previous_suggestion_index][4]}"

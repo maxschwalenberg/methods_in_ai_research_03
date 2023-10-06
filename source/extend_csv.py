@@ -21,9 +21,9 @@ def add_new_properties(source_csv_path: str, target_csv_path: str):
         new_crowdedness_column.append(random.choice(crowdedness))
         new_stay_length_column.append(random.choice(length_stay))
 
-    data["FoodQuality"] = new_food_column
-    data["Crowdedness"] = new_crowdedness_column
-    data["StayLength"] = new_stay_length_column
+    data["food_quality"] = new_food_column
+    data["crowdedness"] = new_crowdedness_column
+    data["stay_length"] = new_stay_length_column
 
     data.to_csv(target_csv_path, index=False)
 

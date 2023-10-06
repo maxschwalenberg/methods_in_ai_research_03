@@ -118,15 +118,15 @@ class RestaurantLookup:
             extraced_key = list(explanation.keys())[0]
             corresponding_value = list(explanation.values())[0]
 
-            if extraced_key == "StayLength":
+            if extraced_key == "stay_length":
                 explanation_string += (
                     f" the length of the stay is {corresponding_value}"
                 )
 
-            elif extraced_key == "Crowdedness":
+            elif extraced_key == "crowdedness":
                 explanation_string += f" the restaurant is {corresponding_value}"
 
-            elif extraced_key == "FoodQuality":
+            elif extraced_key == "food_quality":
                 explanation_string += f" the food is {corresponding_value}"
 
             elif extraced_key == "pricerange":
@@ -144,14 +144,3 @@ class RestaurantLookup:
                     explanation_string += ","
 
         return explanation_string
-
-
-"""filename = "data/new_restaurant_info.csv"
-restaurant_lookup = RestaurantLookup(filename)
-
-res = restaurant_lookup.lookup(
-    {"pricerange": "cheap", "additional_requirement": "romantic"}
-)
-explanation = restaurant_lookup.explain_inference(res.iloc[0], "romantic")
-print(explanation)
-print(res.iloc[0])"""

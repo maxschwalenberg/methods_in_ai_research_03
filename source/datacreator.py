@@ -15,7 +15,7 @@ class Datacreator:
         file = open(filename, "r")
         self.lines = file.readlines()
 
-    def assignClass(self):
+    def assign_class(self):
         # check if you want to remove duplicates
         if self.remove_duplicate:
             self.lines = set(self.lines)
@@ -30,7 +30,7 @@ class Datacreator:
 
             self.labeled_data.append([label, text])
 
-    def createDataset(self):
+    def create_dataset(self):
         # make a numpy array
 
         x = np.array(self.labeled_data)[:, 1]

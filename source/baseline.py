@@ -9,7 +9,7 @@ class RuleBasedBaseline(Model):
         super().__init__(datacreator_instance)
         self.rule_data = []
 
-    def loadRulesFile(self, filename):
+    def load_rules_file(self, filename):
         file = open(filename).read()
         self.rule_data = json.loads(file)
 
@@ -49,7 +49,7 @@ class MajorityClassBaseline(Model):
         super().__init__(datacreator_instance)
         self.majority = None
 
-    def findMajority(self, input_list):
+    def find_majority(self, input_list):
         count_dict = {}
         for intent in input_list:
             if intent not in count_dict:
@@ -69,6 +69,6 @@ class MajorityClassBaseline(Model):
         self.preds = [self.majority] * len(input_list)
 
     def develop(self):
-        self.findMajority(self.datacreator_instance.y_test)
+        self.find_majority(self.datacreator_instance.y_test)
         self.predict(self.datacreator_instance.x_test)
         self.evaluate()
