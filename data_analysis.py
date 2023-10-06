@@ -1,5 +1,5 @@
 from source.datacreator import Datacreator
-from source.ml_model import LogisticRegressionModel
+from source.config import load_file_paths_configuration
 
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
@@ -9,16 +9,19 @@ import numpy as np
 
 # Script for data analysis to study the data and the machine learning model performance
 
-filename = "data/dialog_acts.dat"
+file_paths_configuration = load_file_paths_configuration(
+    "output/data/file_paths_config.json"
+)
+
 datacreator_with_duplicates = Datacreator(False)
 
-datacreator_with_duplicates.openfile(filename)
+datacreator_with_duplicates.openfile(file_paths_configuration.dialog_acts_path)
 datacreator_with_duplicates.assign_class()
 datacreator_with_duplicates.create_dataset()
 
 datacreator_without_duplicates = Datacreator(True)
 
-datacreator_without_duplicates.openfile(filename)
+datacreator_without_duplicates.openfile(file_paths_configuration.dialog_acts_path)
 datacreator_without_duplicates.assign_class()
 datacreator_without_duplicates.create_dataset()
 
@@ -34,8 +37,7 @@ data = {
     "xwithduplicate": datacreator_with_duplicates.x,
     "ywithduplicate": datacreator_with_duplicates.y,
     "xwithoutduplicate": datacreator_without_duplicates.x,
-    "ywithoutduplicate": datacreator_without_duplicates.y
-
+    "ywithoutduplicate": datacreator_without_duplicates.y,
 }
 
 # 1 - Distribution of dialogs acts
@@ -111,9 +113,7 @@ for dialogact in dialogsacts:
     dialogsactsindexs = [
         i for i, y in enumerate(data["ywithduplicate"]) if y == dialogact
     ]
-    dialogs_x_lengths = [
-        len(data["xwithduplicate"][i]) for i in dialogsactsindexs
-    ]
+    dialogs_x_lengths = [len(data["xwithduplicate"][i]) for i in dialogsactsindexs]
     average_length = np.mean(dialogs_x_lengths)
     dialogs_lengths[dialogact] = average_length
 
