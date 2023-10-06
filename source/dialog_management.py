@@ -96,8 +96,8 @@ def patternMatchKeywordExtraction(data, keyword_dict):
     # Keyword search
     for key, values in keyword_dict.items():
         for value in values:
-            if temp:= (re.findall(r"\b" + value + r"\b", data)):
-                result[key] = value 
+            if temp := (re.findall(r"\b" + value + r"\b", data)):
+                result[key] = value
 
     # Pattern search to find the possible misspelled keywords
 
@@ -118,13 +118,15 @@ def patternMatchKeywordExtraction(data, keyword_dict):
     # Check for price range keyword pattern (* priced)
     # Example: "I want the restaurant to be *cheap* priced"
     if (temp := re.findall(r"(\w+) priced", data)) and ("pricerange" not in result):
-           for keyword in keyword_dict["pricerange"]:
-                if levdistance(temp[0], keyword) <= 2:
-                    result["pricerange"] = keyword
- 
+        for keyword in keyword_dict["pricerange"]:
+            if levdistance(temp[0], keyword) <= 2:
+                result["pricerange"] = keyword
+
     # Check for food/price range keyword pattern (* restaurant)
     # Example: "I want a *Chinese*/*Cheap* restaurant"
-    if (temp := re.findall("(\w+) restaurant", data)) and ("food" or "pricerange" not in result):
+    if (temp := re.findall("(\w+) restaurant", data)) and (
+        "food" or "pricerange" not in result
+    ):
         for key, values in keyword_dict.items():
             for value in values:
                 if levdistance(temp[0], value) <= 2:
@@ -322,10 +324,12 @@ class AskArea(State):
         elif input == "bye":
             return Goodbye(self.info)
         elif (
-            input == "negate" or input == "repeat" 
+            input == "negate" or input == "repeat"
         ):  # if the user negate the ask, we should ask again
             return AskArea(self.info)
-        elif input == "deny": #if deny we delete the preferences and we go back to ask for info
+        elif (
+            input == "deny"
+        ):  # if deny we delete the preferences and we go back to ask for info
             extracted_preferences = patternMatchKeywordExtraction(
                 self.user_utterance, self.keyword_dict
             )
@@ -539,7 +543,10 @@ class Suggestion(State):
                     random_index = random.randrange(0, (len(self.suggestions.values)))
             self.previous_suggestion_index = random_index
 
-            message = f"System: {self.feedback_string}The best restaurant according to your preferences is: {self.suggestions.values[random_index][0]}"
+            message = f"System: {self.feedback_string}The best restaurant according to your preferences is: {self.suggestions.values[random_index][0]}."
+
+            if "additional_requirement" in self.info.extracted_preferences:
+                message += f" {self.restaurant_lookup.explain_inference(self.suggestions.iloc[random_index], self.info.extracted_preferences['additional_requirement'])}"
 
             print(message)
             if self.info.t2s:
@@ -575,7 +582,9 @@ class Suggestion(State):
                 self.previous_suggestion_index,
                 self.user_utterance,
             )
-        elif input == "deny": #if deny we delete the preferences and we go back to ask for info
+        elif (
+            input == "deny"
+        ):  # if deny we delete the preferences and we go back to ask for info
             extracted_preferences = patternMatchKeywordExtraction(
                 self.user_utterance, self.keyword_dict
             )

@@ -25,10 +25,7 @@ class RestaurantLookup:
         # apply inference
         if "additional_requirement" in list(preferences.keys()):
             additional_requirement = preferences["additional_requirement"]
-        else:
-            additional_requirement = ""
-
-        result_df = self.inference(result_df, additional_requirement)
+            result_df = self.inference(result_df, additional_requirement)
 
         return result_df
 
@@ -64,7 +61,9 @@ class RestaurantLookup:
                     is_match = True
 
                     # add values to explanations list
-                    explanations += [v for k, v in rule.items() if k != "consequence"]
+                    explanations += [
+                        {k: v} for k, v in rule.items() if k != "consequence"
+                    ]
                 else:
                     # at this point the other rules dont need to be checked anymore because it is proven that the additional requirements doesnt hold
                     is_match = False
@@ -75,7 +74,7 @@ class RestaurantLookup:
             for rule in rules:
                 if not rule["consequence"]:
                     explanations += [
-                        f"not {v}" for k, v in rule.items() if k != "consequence"
+                        {k: f"not {v}"} for k, v in rule.items() if k != "consequence"
                     ]
 
         return is_match, explanations
@@ -102,16 +101,52 @@ class RestaurantLookup:
         return results_df
 
     def explain_inference(self, row: pd.DataFrame, additional_requirement: str):
-        _, explanation = self.match_rule(
+        explanations: list[dict]
+
+        _, explanations = self.match_rule(
             self.additional_requirement_rules[additional_requirement], row
         )
 
-        return explanation
+        # construct explanation string
+        explanation_string = (
+            f"The recommended restaurant is {additional_requirement} because"
+        )
+        for i, explanation in enumerate(explanations):
+            if i == len(explanations) - 1 and len(explanations) != 1:
+                explanation_string += " and"
+
+            extraced_key = list(explanation.keys())[0]
+            corresponding_value = list(explanation.values())[0]
+
+            if extraced_key == "StayLength":
+                explanation_string += (
+                    f" the length of the stay is {corresponding_value}"
+                )
+
+            elif extraced_key == "Crowdedness":
+                explanation_string += f" the restaurant is {corresponding_value}"
+
+            elif extraced_key == "FoodQuality":
+                explanation_string += f" the food is {corresponding_value}"
+
+            elif extraced_key == "pricerange":
+                explanation_string += f" the served food is {corresponding_value}"
+
+            elif extraced_key == "food":
+                explanation_string += f" the served food is {corresponding_value}"
+
+            if i == (len(explanations) - 1):
+                explanation_string += "."
+            else:
+                # if we add the last explanation which means that we add an 'and',
+                # we dont wanna insert a comma
+                if not (i == len(explanations) - 2 and len(explanations) != 1):
+                    explanation_string += ","
+
+        return explanation_string
 
 
-"""
-
-filename = "data/new_restaurant_info.csv"
+"""filename = "data/new_restaurant_info.csv"
 restaurant_lookup = RestaurantLookup(filename)
 
 res = restaurant_lookup.lookup(
