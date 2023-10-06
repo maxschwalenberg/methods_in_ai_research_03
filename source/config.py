@@ -41,3 +41,5 @@ def load_configuration(configuration_file_path: str):
         data["allow_feedback"],
         data["allow_preference_change"],
     ]
+
+    return configuration

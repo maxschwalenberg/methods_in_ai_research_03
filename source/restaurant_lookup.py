@@ -109,6 +109,8 @@ class RestaurantLookup:
         return explanation
 
 
+"""
+
 filename = "data/new_restaurant_info.csv"
 restaurant_lookup = RestaurantLookup(filename)
 
@@ -117,4 +119,4 @@ res = restaurant_lookup.lookup(
 )
 explanation = restaurant_lookup.explain_inference(res.iloc[0], "romantic")
 print(explanation)
-print(res.iloc[0])
+print(res.iloc[0])"""
