@@ -8,6 +8,7 @@ import pyttsx3
 
 from source.model import Model
 from source.restaurant_lookup import RestaurantLookup
+from source.config import FilePathsConfig
 
 # for speech
 engine = pyttsx3.init()
@@ -18,15 +19,19 @@ class DialogManagement:
     the conversation.
     """
 
-    def __init__(self, classifier: Model, configuration, debug=False) -> None:
+    def __init__(
+        self,
+        classifier: Model,
+        configuration,
+        file_paths_config: FilePathsConfig,
+        debug=False,
+    ) -> None:
         self.classifier = classifier
 
-        # Gather the known keywords for the
-        filename = "data/new_restaurant_info.csv"
-        self.fetchKeywords(filename)
+        self.fetchKeywords(file_paths_config.extended_restaurant_info_path)
 
         # initialize info instance
-        info = Info(self.keyword_dict, {}, {}, configuration)
+        info = Info(self.keyword_dict, {}, {}, configuration, file_paths_config)
 
         # initialize the welcome state with no known preferences
         self.current_state = Welcome(info)
@@ -165,10 +170,12 @@ class Info:
         extracted_preferences: dict,
         extracted_preferences_old: dict,
         configuration,
+        file_paths_config: FilePathsConfig,
     ) -> None:
         self.keyword_dict = keyword_dict
         self.extracted_preferences = extracted_preferences
         self.extracted_preferences_old = extracted_preferences_old
+        self.file_paths_config = file_paths_config
 
         # Configuration settings by the user
         (
@@ -266,7 +273,6 @@ class Welcome(State):
         return user_utterance
 
     def transition(self, input):
-        extracted_preferences = {}
         if input == "restart" or input == "repeat":
             return Welcome(self.info)
         elif input == "bye":
@@ -528,8 +534,7 @@ class Suggestion(State):
     ) -> None:
         super().__init__(info)
 
-        filename = "data/new_restaurant_info.csv"
-        self.restaurant_lookup = RestaurantLookup(filename)
+        self.restaurant_lookup = RestaurantLookup(info.file_paths_config)
         self.previous_suggestion_index = previous_suggestion_index
         self.suggestions = None
 

@@ -1,12 +1,14 @@
 import pandas as pd
 import json
 
+from source.config import FilePathsConfig
+
 
 class RestaurantLookup:
-    def __init__(self, restaurant_info_csv_path: str) -> None:
-        self.data = pd.read_csv(restaurant_info_csv_path)
+    def __init__(self, file_paths_config: FilePathsConfig) -> None:
+        self.data = pd.read_csv(file_paths_config.extended_restaurant_info_path)
         self.additional_requirement_rules = json.load(
-            open("output/data/additional_requirements.json")
+            open(file_paths_config.additional_requirement_rules_path)
         )
 
     def lookup(self, preferences: dict) -> pd.DataFrame:
