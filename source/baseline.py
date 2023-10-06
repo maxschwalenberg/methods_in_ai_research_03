@@ -9,7 +9,7 @@ class RuleBasedBaseline(Model):
     def __init__(self, datacreator_instance: Datacreator, rulesfile : str) -> None:
         super().__init__(datacreator_instance)
         self.rule_data = []
-        self.loadRulesFile(rulesfile)
+        self.load_rules_file(rulesfile)
 
     def load_rules_file(self, filename):
         file = open(filename).read()
@@ -50,7 +50,7 @@ class MajorityClassBaseline(Model):
     def __init__(self, datacreator_instance: Datacreator) -> None:
         super().__init__(datacreator_instance)
         self.majority = None
-        self.findMajority(self.datacreator_instance.y_test)
+        self.find_majority(self.datacreator_instance.y_test)
 
     def find_majority(self, input_list):
         count_dict = {}

@@ -43,7 +43,7 @@ for remove_duplicate in remove_duplicates_options:
     ]
 
     # Rule-Based Baseline
-    rule_based_baseline = RuleBasedBaseline(datacreator_instance, baseline_rules_file)
+    rule_based_baseline = RuleBasedBaseline(datacreator_instance, filenames_config.baseline_rules_path)
     rule_based_baseline.develop()
 
     # add results to dataframe
