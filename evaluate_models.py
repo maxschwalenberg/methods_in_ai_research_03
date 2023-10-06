@@ -1,4 +1,6 @@
 import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
 
 from source.datacreator import Datacreator
 
@@ -87,7 +89,46 @@ print(f"Save evaluation results to {save_results_in}")
 
 incorrect_preds_logistic, x_testerrors_logistic, correct_ytest_logistic = logistic_regression.get_errors()
 incorrect_preds_tree, x_testerrors_tree, correct_ytest_tree = decision_tree.get_errors()
-incorrect_preds_gaseline, x_testerrors_baseline, correct_ytest_baseline = rule_based_baseline.get_errors()
+incorrect_preds_baseline, x_testerrors_baseline, correct_ytest_baseline = rule_based_baseline.get_errors()
+
+# Unique labels (each dialog act) and we create a graphic for each model
+dialogs_acts = np.unique(np.concatenate([correct_ytest_logistic, correct_ytest_tree, correct_ytest_baseline]))
+plt.figure(figsize=(12, 6))
+
+# Logistic Regression
+plt.subplot(131)
+plt.hist(incorrect_preds_logistic, bins=len(dialogs_acts), alpha=0.5, color='red', label='Incorrect (Logistic)')
+plt.xticks(range(len(dialogs_acts)), dialogs_acts)
+plt.xticks(rotation=90) 
+plt.xlabel('Dialog Act')
+plt.ylabel('Frequency')
+plt.legend()
+plt.title('Error in predictions (Logistic)')
+
+# Binary Trees
+plt.subplot(132)
+plt.hist(incorrect_preds_tree, bins=len(dialogs_acts), alpha=0.5, color='blue', label='Incorrect (Tree)')
+plt.xticks(range(len(dialogs_acts)), dialogs_acts)
+plt.xticks(rotation=90) 
+plt.xlabel('Dialog Act')
+plt.ylabel('Frequency ')
+plt.legend()
+plt.title('Error in predictions (Tree)')
+
+# Baseline Model
+plt.subplot(133)
+plt.hist(incorrect_preds_baseline, bins=len(dialogs_acts), alpha=0.5, color='green', label='Incorrect (Baseline)')
+plt.xticks(range(len(dialogs_acts)), dialogs_acts)
+plt.xticks(rotation=90) 
+plt.xlabel('Dialog Act')
+plt.ylabel('Frequency')
+plt.legend()
+plt.title('Error in predictions (Baseline)')
+
+plt.tight_layout()
+plt.savefig("output/images/error_predictions_models.jpg")
+
+
 
 
 
