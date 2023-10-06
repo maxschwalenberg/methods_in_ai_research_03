@@ -1,11 +1,11 @@
 {
     "romantic": [
         {
-            "Crowdedness": "busy",
+            "crowdedness": "busy",
             "consequence": false
         },
         {
-            "StayLength": "long",
+            "stay_length": "long",
             "consequence": true
         }
     ],
@@ -16,19 +16,19 @@
         },
         {
             "pricerange": "cheap",
-            "FoodQuality": "good",
+            "food_quality": "good",
             "consequence": true
         }
     ],
     "children": [
         {
-            "StayLength": "long",
+            "stay_length": "long",
             "consequence": false
         }
     ],
     "assigned seats": [
         {
-            "Crowdedness": "busy",
+            "crowdedness": "busy",
             "consequence": true
         }
     ]
