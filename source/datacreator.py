@@ -33,10 +33,10 @@ class Datacreator:
     def create_dataset(self):
         # make a numpy array
 
-        x = np.array(self.labeled_data)[:, 1]
-        y = np.array(self.labeled_data)[:, 0]
+        self.x = np.array(self.labeled_data)[:, 1]
+        self.y = np.array(self.labeled_data)[:, 0]
         # make the train and test data split
         self.x_train, self.x_test, self.y_train, self.y_test = train_test_split(
-            x, y, test_size=0.15, random_state=1
+            self.x, self.y, test_size=0.15, random_state=1
         )
         self.dataset_created = True

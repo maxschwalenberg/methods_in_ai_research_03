@@ -31,13 +31,18 @@ data = {
     "xtrainwithoutduplicate": datacreator_without_duplicates.x_train,
     "ytestwithoutduplicate": datacreator_without_duplicates.y_test,
     "ytrainwithoutduplicate": datacreator_without_duplicates.y_train,
+    "xwithduplicate": datacreator_with_duplicates.x,
+    "ywithduplicate": datacreator_with_duplicates.y,
+    "xwithoutduplicate": datacreator_without_duplicates.x,
+    "ywithoutduplicate": datacreator_without_duplicates.y
+
 }
 
 # 1 - Distribution of dialogs acts
 
 # Get word count
-word_counts_with_duplicates = Counter(data["ytrainwithduplicate"])
-word_counts_without_duplicates = Counter(data["ytrainwithoutduplicate"])
+word_counts_with_duplicates = Counter(data["ywithduplicate"])
+word_counts_without_duplicates = Counter(data["ywithoutduplicate"])
 
 # Convert word count into separate lists of words and frequencies
 words_with_duplicates, frequencies_with_duplicates = zip(
@@ -54,14 +59,14 @@ plt.bar(
     frequencies_with_duplicates,
     alpha=0.5,
     color="g",
-    label="Ytrain withduplicate",
+    label="Y withduplicate",
 )
 plt.bar(
     words_without_duplicates,
     frequencies_without_duplicates,
     alpha=0.5,
     color="b",
-    label="Ytrain withoutduplicate",
+    label="Y withoutduplicate",
 )
 plt.gca().set(title="Frequency Histogram of DialogAct", ylabel="Frequency")
 plt.legend()
@@ -72,12 +77,12 @@ plt.savefig("output/images/distribution_dialog_act_comparison.jpg")
 # Create the figure and axes for subplots
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
 
-# Plot the histogram for Distribution of DialogActs for Ytrainwithduplicate and Ytrainwithoutduplicate
+# Plot the histogram for Distribution of DialogActs for Ywithduplicate and Ywithoutduplicate
 ax1.bar(words_with_duplicates, frequencies_with_duplicates, alpha=0.5, color="g")
-ax1.set(title="Frequency Histogram of Ytrain withduplicate", ylabel="Frequency")
+ax1.set(title="Frequency Histogram of Y withduplicate", ylabel="Frequency")
 ax1.tick_params(axis="x", rotation=90)
 ax2.bar(words_without_duplicates, frequencies_without_duplicates, alpha=0.5, color="b")
-ax2.set(title="Frequency Histogram of Ytrain withoutduplicate", ylabel="Frequency")
+ax2.set(title="Frequency Histogram of Y withoutduplicate", ylabel="Frequency")
 ax2.tick_params(axis="x", rotation=90)
 plt.tight_layout()
 plt.savefig("output/images/distribution_dialogs_acts_separated.jpg")
@@ -96,32 +101,32 @@ plt.savefig("output/images/pie_chart_with_duplicates.jpg")
 
 # 2 - Length of the utterances
 
-# Calculate the average length of xtrain for each dialogact in ytrainwithduplicate
+# Calculate the average length of x for each dialogact in ywithduplicate
 
-dialogsacts = set(data["ytrainwithduplicate"])
+dialogsacts = set(data["ywithduplicate"])
 dialogs_lengths = {}
 
 # We get the lengths for each dialog act, then we calculate the average and add it to dialogs_lengths
 for dialogact in dialogsacts:
     dialogsactsindexs = [
-        i for i, y in enumerate(data["ytrainwithduplicate"]) if y == dialogact
+        i for i, y in enumerate(data["ywithduplicate"]) if y == dialogact
     ]
-    dialogs_xtrain_lengths = [
-        len(data["xtrainwithduplicate"][i]) for i in dialogsactsindexs
+    dialogs_x_lengths = [
+        len(data["xwithduplicate"][i]) for i in dialogsactsindexs
     ]
-    average_length = np.mean(dialogs_xtrain_lengths)
+    average_length = np.mean(dialogs_x_lengths)
     dialogs_lengths[dialogact] = average_length
 
 # Also, we figure out the average length of every utterance (for every dialog act class)
-xtrain_lengthforall = [len(sentence) for sentence in data["xtrainwithduplicate"]]
-dialogs_lengths["average"] = np.mean(xtrain_lengthforall)
+x_lengthforall = [len(sentence) for sentence in data["xwithduplicate"]]
+dialogs_lengths["average"] = np.mean(x_lengthforall)
 
 # Create the plot
 plt.figure(figsize=(10, 6))
 plt.bar(dialogs_lengths.keys(), dialogs_lengths.values())
 plt.xlabel("Dialogs Acts")
 plt.ylabel("Average Length Utterances")
-plt.title("Average Length of X train WithDuplicates for DialogAct")
+plt.title("Average Length of X  WithDuplicates for DialogAct")
 plt.xticks(rotation=45)
 plt.tight_layout()
 plt.savefig("output/images/length_utterances.jpg")
@@ -129,7 +134,7 @@ plt.savefig("output/images/length_utterances.jpg")
 # 3 - Most used words
 
 # We attach every utterance in text
-text = " ".join(data["xtrainwithduplicate"])
+text = " ".join(data["xwithduplicate"])
 
 # Create object WorldCloud
 wordcloud = WordCloud(width=800, height=400, background_color="white").generate(text)
@@ -144,7 +149,7 @@ plt.figure(figsize=(12, 6))
 plt.subplot(1, 2, 1)
 plt.imshow(wordcloud, interpolation="bilinear")
 plt.axis("off")
-plt.title("Word Cloud most used words in utterances (xtrainwithduplicates)")
+plt.title("Word Cloud most used words in utterances (xwithduplicates)")
 plt.subplot(1, 2, 2)
 words, frequencies = zip(*top_10_words)
 plt.barh(words, frequencies, color="skyblue")
@@ -157,7 +162,7 @@ plt.savefig("output/images/most_words_used.jpg")
 # 5 - Words per Dialog Act
 
 
-dialogsacts = set(data["ytrainwithduplicate"])
+dialogsacts = set(data["ywithduplicate"])
 
 top_words_by_dialog_act = {}
 
@@ -170,8 +175,8 @@ def get_top_words(text, n):
 
 for dialogact in dialogsacts:
     filtered_phrases = [
-        data["xtrainwithduplicate"][i]
-        for i, y in enumerate(data["ytrainwithduplicate"])
+        data["xwithduplicate"][i]
+        for i, y in enumerate(data["ywithduplicate"])
         if y == dialogact
     ]
     text_for_dialogact = " ".join(filtered_phrases)
