@@ -519,8 +519,8 @@ class AskForAdditionalInformation(State):
                 )
 
                 if contradiction_present:
-                    self.print(f"System: {explanation_string}")
-                    return AskForAdditionalInformation(self.info)
+                    # remove additional requirement from preferences dict
+                    return Contradiction(self.info, explanation_string)
 
             # if we want to allow preferences to be overwritten
             if self.info.allow_preference_change:
@@ -560,7 +560,6 @@ class Suggestion(State):
             self.previous_suggestion_index = random_index
 
             message = f"System: {self.feedback_string}The best restaurant according to your preferences is: {self.suggestions.values[random_index][0]}."
-
             if "additional_requirement" in self.info.extracted_preferences:
                 message += f" {self.restaurant_lookup.explain_inference(self.suggestions.iloc[random_index], self.info.extracted_preferences['additional_requirement'])}"
 
@@ -680,6 +679,27 @@ class GiveDetails(State):
             )
         else:
             return Goodbye(self.info)
+
+
+class Contradiction(State):
+    """This state only serves as a way to return the explanation of the contradiction to the user.
+    It only is a way to control the flow of the program.therefore is not featured in the diagram.
+
+    """
+
+    def __init__(self, info: Info, explanation_string: str) -> None:
+        super().__init__(info)
+        self.explanation_string = explanation_string
+
+    def dialog(self):
+        message = self.explanation_string + " The additional requirement was removed."
+        self.print(message)
+        user_utterance = "temporary string"
+
+        return user_utterance
+
+    def transition(self, input):
+        return AskForAdditionalInformation(self.info)
 
 
 class Goodbye(State):
