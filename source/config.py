@@ -35,4 +35,3 @@ def load_configuration(configuration_file_path: str):
     return configuration
 
 
-load_file_paths_configuration("output/data/file_paths_config.json")

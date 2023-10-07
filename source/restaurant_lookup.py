@@ -1,7 +1,7 @@
 import pandas as pd
 import json
 
-from source.config import FilePathsConfig
+from source.config import FilePathsConfig, load_file_paths_configuration
 
 
 class RestaurantLookup:
@@ -41,12 +41,9 @@ class RestaurantLookup:
         for rule in rules:
             conditions_list = []
 
-            for defined_conditions_key in rule:
-                if defined_conditions_key == "consequence":
-                    continue
-
-                defined_condition_value = rule[defined_conditions_key]
-                actual_value = row[defined_conditions_key]
+            for condition in rule["conditions"]:
+                defined_condition_value = condition["value"]
+                actual_value = row[condition["category"]]
 
                 if defined_condition_value == actual_value:
                     conditions_list.append(True)
@@ -64,7 +61,8 @@ class RestaurantLookup:
 
                     # add values to explanations list
                     explanations += [
-                        {k: v} for k, v in rule.items() if k != "consequence"
+                        {condition["category"]: condition["value"]}
+                        for condition in rule["conditions"]
                     ]
                 else:
                     # at this point the other rules dont need to be checked anymore because it is proven that the additional requirements doesnt hold
@@ -76,7 +74,8 @@ class RestaurantLookup:
             for rule in rules:
                 if not rule["consequence"]:
                     explanations += [
-                        {k: f"not {v}"} for k, v in rule.items() if k != "consequence"
+                        {condition["category"]: f'not {condition["value"]}'}
+                        for condition in rule["conditions"]
                     ]
 
         return is_match, explanations
@@ -102,7 +101,48 @@ class RestaurantLookup:
         results_df = results_df.iloc[matches]
         return results_df
 
-    def explain_inference(self, row: pd.DataFrame, additional_requirement: str):
+    def check_for_contradiction(self, preferences: dict, additional_requirement: str):
+        explanations = []
+
+        rules = self.additional_requirement_rules[additional_requirement]
+
+        # initialize the condition clash as false
+        clashing_condition = False
+        for rule in rules:
+            # check if a clash exists
+            consequence = rule["consequence"]
+
+            for condition in rule["conditions"]:
+                category = condition["category"]
+                value = condition["value"]
+
+                # only check if preference exists in dictionary
+                if category in preferences:
+                    # only proceed check if preference is not 'any'
+                    if preferences[category] != "any":
+                        # if the condition holds then the consequence is true
+                        if consequence:
+                            if value != preferences[category]:
+                                clashing_condition = True
+
+                                explanations.append({category: preferences[category]})
+                        # if the condition holds then the consequence is false
+                        else:
+                            if value == preferences[category]:
+                                clashing_condition = True
+
+                                explanations.append({category: preferences[category]})
+
+        explanation_string = ""
+        if clashing_condition:
+            explanation_string = f"The additional requirement {additional_requirement} leads to a contradiction with the already given preferences because"
+            explanation_string = self.construct_explanation_string(
+                explanation_string, explanations, False
+            )
+
+        return clashing_condition, explanation_string
+
+    def explain_inference(self, row: pd.DataFrame, additional_requirement: str) -> str:
         explanations: list[dict]
 
         _, explanations = self.match_rule(
@@ -113,29 +153,63 @@ class RestaurantLookup:
         explanation_string = (
             f"The recommended restaurant is {additional_requirement} because"
         )
+        explanation_string = self.construct_explanation_string(
+            explanation_string, explanations, True
+        )
+        return explanation_string
+
+    @staticmethod
+    def construct_explanation_string(
+        explanation_string: str, explanations: list[dict], explain_inference: bool
+    ):
         for i, explanation in enumerate(explanations):
             if i == len(explanations) - 1 and len(explanations) != 1:
                 explanation_string += " and"
 
             extraced_key = list(explanation.keys())[0]
-            corresponding_value = list(explanation.values())[0]
+            corresponding_value = explanation[extraced_key]
 
             if extraced_key == "stay_length":
-                explanation_string += (
-                    f" the length of the stay is {corresponding_value}"
-                )
+                if explain_inference:
+                    explanation_string += (
+                        f" the length of the stay is {corresponding_value}"
+                    )
+                else:
+                    explanation_string += (
+                        f" the expectedlength of the stay is {corresponding_value}"
+                    )
 
             elif extraced_key == "crowdedness":
-                explanation_string += f" the restaurant is {corresponding_value}"
+                if explain_inference:
+                    explanation_string += f" the restaurant is {corresponding_value}"
+                else:
+                    explanation_string += (
+                        f" the expected busyness is {corresponding_value}"
+                    )
 
             elif extraced_key == "food_quality":
-                explanation_string += f" the food is {corresponding_value}"
+                if explain_inference:
+                    explanation_string += f" the food is {corresponding_value}"
+                else:
+                    explanation_string += (
+                        f" the expected food quality is {corresponding_value}"
+                    )
 
             elif extraced_key == "pricerange":
-                explanation_string += f" the served food is {corresponding_value}"
+                if explain_inference:
+                    explanation_string += f" the restaurant is {corresponding_value}"
+                else:
+                    explanation_string += (
+                        f" the expected price is {corresponding_value}"
+                    )
 
             elif extraced_key == "food":
-                explanation_string += f" the served food is {corresponding_value}"
+                if explain_inference:
+                    explanation_string += f" the served food is {corresponding_value}"
+                else:
+                    explanation_string += (
+                        f" the expected served food is {corresponding_value}"
+                    )
 
             if i == (len(explanations) - 1):
                 explanation_string += "."
@@ -144,5 +218,22 @@ class RestaurantLookup:
                 # we dont wanna insert a comma
                 if not (i == len(explanations) - 2 and len(explanations) != 1):
                     explanation_string += ","
-
         return explanation_string
+
+
+"""
+a = RestaurantLookup(
+    load_file_paths_configuration("output/data/file_paths_config.json")
+)
+
+res = a.lookup({"additional_requirement": "touristic"})
+print(res)
+re = a.explain_inference(res.iloc[0], "touristic")
+print(re)
+
+res = a.check_for_contradiction(
+    {"pricerange": "expensive", "food_quality": "bad"}, "touristic"
+)
+
+print(res)
+"""
