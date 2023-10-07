@@ -98,7 +98,7 @@ plt.pie(
     startangle=140,
 )
 plt.title("Distribution of Dialog Acts (with duplicates)")
-plt.axis("equal")  # Equal aspect ratio ensures that pie is drawn as a circle.
+plt.axis("equal")  
 plt.savefig("output/images/pie_chart_with_duplicates.jpg")
 
 # 2 - Length of the utterances
