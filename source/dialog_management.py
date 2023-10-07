@@ -142,10 +142,16 @@ def pattern_match_keyword_extraction(data, keyword_dict, context: str):
         if temp := re.findall("any (\w+)", data):
             for word in temp:
                 for key in keyword_dict.keys():
-                    if levdistance(word, key) <= 2:
+                    # Specific levdistance handling for the "pricerange" keyword
+                    # so that "price" and "priced" are also accepted.
+                    if(key == "pricerange"):
+                      if levdistance(word, key) <= 5:
                         result[key] = "Any"
-        elif context in keyword_dict.keys():
-            result[context] = "Any"
+                    else:
+                        if levdistance(word, key) <= 2:
+                            result[key] = "Any"
+        elif (context in keyword_dict.keys()):
+             result[context] = "Any"
 
     return result
 
@@ -560,8 +566,8 @@ class Suggestion(State):
             self.info.extracted_preferences
         )
         if not self.suggestions.empty:
-            random_index = 0
-            if len(self.suggestions.values) > 1:
+            random_index = self.previous_suggestion_index
+            if len(self.suggestions.values) > 1:   
                 while self.previous_suggestion_index == random_index:
                     random_index = random.randrange(0, (len(self.suggestions.values)))
             self.previous_suggestion_index = random_index

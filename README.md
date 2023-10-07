@@ -21,12 +21,12 @@ TODO: make naming more clear with the .predict()
 It also provides the evaluate() method to generate metrics like accuracy, precision and recall.
 
 ### baseline.py
-Defines the majority-based-baseline and also the rule-based-baseline which uses a predefined set of rules from data/baseline_rules.json
+Contains the baselines which are used to provide a benchmark with the machine learning models. They contain two types, namely the majority baseline and the rule-based baseline. The majority baseline classifies the given utterance always with the most common class within the dataset while the rule-based baseline uses the given rules in /data/baselinerules.json which will help classify the given utterance.
 
 ### ml_model.py
 Defines the 'MLModel' class which implements the functionality to encode the training data to a bag of words representation to which both the machine learning models (decision tree & logistic regression) have access due to inheritance. It also provides the multiple other functionalities, the machine learning model classes only have to implement the respective .fit() method.
 ### datacreator.py
-Defines the class Datacreator which handles the preprocessing of the data, generates the data splits and finally creates the dataset.
+Contains the DataCreator class which is mainly responsible for the preprocessing process. It loads the dataset-file and converts it into a object class. Finally, the data is split between train and test data so it can be used for the classification models. 
 
 
 ### extend_csv.py
