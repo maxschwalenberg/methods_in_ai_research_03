@@ -92,7 +92,7 @@ def pattern_match_request(data):
         return None
 
 
-def patternMatchKeywordExtraction(data, keyword_dict, context : str):
+def patternMatchKeywordExtraction(data, keyword_dict, context: str):
     data = data.lower()
     temp = None
     result = {}
@@ -138,14 +138,14 @@ def patternMatchKeywordExtraction(data, keyword_dict, context : str):
 
     # Check for any keyword pattern (any *)
     # Example: "I want any (food)/(area)/(pricerange)"
-    if (re.search(r"\b" + "any" + r"\b", data) and (len(result) != 3)):
-        if (temp := re.findall("any (\w+)", data)):
+    if re.search(r"\b" + "any" + r"\b", data) and (len(result) != 3):
+        if temp := re.findall("any (\w+)", data):
             for word in temp:
                 for key in keyword_dict.keys():
                     if levdistance(word, key) <= 2:
                         result[key] = "Any"
-        elif (context in keyword_dict.keys()):
-             result[context] = "Any"
+        elif context in keyword_dict.keys():
+            result[context] = "Any"
 
     return result
 
@@ -487,6 +487,7 @@ class AskType(State):
 class AskForAdditionalInformation(State):
     def __init__(self, info: Info) -> None:
         super().__init__(info)
+        self.restaurant_lookup = RestaurantLookup(info.file_paths_config)
 
     def dialog(self):
         message = f"System: {self.feedback_string}Do you have additional requirements?"
@@ -509,16 +510,27 @@ class AskForAdditionalInformation(State):
         ):  # if the user negate the ask, we should ask again ?? Should this go to suggestion?
             return Suggestion(self.info)
         elif input == "inform":
+            extracted_preferences = additional_keyword_extraction(self.user_utterance)
+
+            if "additional_requirement" in extracted_preferences:
+                # check for contradiction
+                (
+                    contradiction_present,
+                    explanation_string,
+                ) = self.restaurant_lookup.check_for_contradiction(
+                    self.info.extracted_preferences,
+                    extracted_preferences["additional_requirement"],
+                )
+
+                if contradiction_present:
+                    print(f"System: {explanation_string}")
+                    return AskForAdditionalInformation(self.info)
+
             # if we want to allow preferences to be overwritten
             if self.info.allow_preference_change:
-                self.info.extracted_preferences.update(
-                    additional_keyword_extraction(self.user_utterance)
-                )
+                self.info.extracted_preferences.update(extracted_preferences)
             # else, first delete all the entries of the extracted preferences that are already present in the dict
             else:
-                extracted_preferences = additional_keyword_extraction(
-                    self.user_utterance
-                )
                 already_existing_keys = list(self.info.extracted_preferences.keys())
                 for existing_key in already_existing_keys:
                     if existing_key in list(extracted_preferences.keys()):

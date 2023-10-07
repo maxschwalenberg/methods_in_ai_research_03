@@ -118,8 +118,8 @@ class RestaurantLookup:
 
                 # only check if preference exists in dictionary
                 if category in preferences:
-                    # only proceed check if preference is not 'any'
-                    if preferences[category] != "any":
+                    # only proceed check if preference is not 'Any'
+                    if preferences[category] != "Any":
                         # if the condition holds then the consequence is true
                         if consequence:
                             if value != preferences[category]:
