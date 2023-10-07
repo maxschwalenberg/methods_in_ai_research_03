@@ -5,8 +5,7 @@ import re
 
 
 class RuleBasedBaseline(Model):
-
-    def __init__(self, datacreator_instance: Datacreator, rulesfile : str) -> None:
+    def __init__(self, datacreator_instance: Datacreator, rulesfile: str) -> None:
         super().__init__(datacreator_instance)
         self.rule_data = []
         self.load_rules_file(rulesfile)

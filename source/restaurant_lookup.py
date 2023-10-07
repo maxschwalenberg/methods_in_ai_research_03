@@ -1,7 +1,7 @@
 import pandas as pd
 import json
 
-from source.config import FilePathsConfig, load_file_paths_configuration
+from source.config import FilePathsConfig
 
 
 class RestaurantLookup:
@@ -219,21 +219,3 @@ class RestaurantLookup:
                 if not (i == len(explanations) - 2 and len(explanations) != 1):
                     explanation_string += ","
         return explanation_string
-
-
-"""
-a = RestaurantLookup(
-    load_file_paths_configuration("output/data/file_paths_config.json")
-)
-
-res = a.lookup({"additional_requirement": "touristic"})
-print(res)
-re = a.explain_inference(res.iloc[0], "touristic")
-print(re)
-
-res = a.check_for_contradiction(
-    {"pricerange": "expensive", "food_quality": "bad"}, "touristic"
-)
-
-print(res)
-"""

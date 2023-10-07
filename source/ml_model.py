@@ -1,5 +1,4 @@
 import numpy as np
-from typing import Union
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn import tree
