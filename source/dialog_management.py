@@ -57,9 +57,7 @@ class DialogManagement:
     def fetch_keywords(self, filename):
         file = open(filename)
         file = csv.DictReader(file)
-        keyword_names = file.fieldnames[
-            1:4
-        ]  # incongruent with preference_extraction.py
+        keyword_names = file.fieldnames[1:4]  # incongruent with preference_extraction.py
         keyword_dict = {key: set() for key in keyword_names}
 
         for row in file:
@@ -393,9 +391,7 @@ class AskPrice(State):
         super().__init__(info)
 
     def dialog(self):
-        message = (
-            f"System: {self.feedback_string}How expensive should the restaurant be?"
-        )
+        message = f"System: {self.feedback_string}How expensive should the restaurant be?"
         self.print(message)
 
         user_utterance = super().dialog()
@@ -507,11 +503,7 @@ class AskForAdditionalInformation(State):
             return Welcome(self.info)
         elif input == "bye":
             return Goodbye(self.info)
-        elif (
-            # why negate or negate?
-            input == "negate"
-            or input == "negate"
-        ):  # if the user negate the ask, we should ask again ?? Should this go to suggestion?
+        elif input == "negate":
             return Suggestion(self.info)
         elif input == "inform":
             extracted_preferences = additional_keyword_extraction(self.user_utterance)
@@ -559,9 +551,7 @@ class Suggestion(State):
         self.suggestions = None
 
     def dialog(self):
-        self.suggestions = self.restaurant_lookup.lookup(
-            self.info.extracted_preferences
-        )
+        self.suggestions = self.restaurant_lookup.lookup(self.info.extracted_preferences)
         if not self.suggestions.empty:
             random_index = self.previous_suggestion_index
             if len(self.suggestions.values) > 1:
