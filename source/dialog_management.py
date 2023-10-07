@@ -252,8 +252,6 @@ class State:
         classified_response = classifier.predict_single_sentence(self.user_utterance)
 
         new_state = self.transition(classified_response)
-        # print
-        print(self.info.extracted_preferences)
         return new_state, classified_response
 
     def dialog(self):
@@ -268,7 +266,7 @@ class Welcome(State):
         super().__init__(info)
 
     def dialog(self):
-        message = f"System: {self.feedback_string}Hello, welcome to the restaurant recommender system? You can ask for restaurants by area/price range/food type. How may I help you?"
+        message = f"System: {self.feedback_string}Hello, welcome to the restaurant recommender system. You can ask for restaurants by area/price range/food type. How may I help you?"
         print(message)
         if self.info.t2s:
             text_to_speech(message)

@@ -27,6 +27,6 @@ configuration = load_configuration(filenames_config.dialog_config_path)
 
 # create the dialog
 dialog_system = DialogManagement(
-    logistic_regression, configuration, filenames_config, debug=True
+    logistic_regression, configuration, filenames_config, debug=False
 )
 dialog_system.run_dialog()
