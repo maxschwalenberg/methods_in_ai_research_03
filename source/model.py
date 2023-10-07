@@ -3,7 +3,7 @@ from source.datacreator import Datacreator
 import numpy as np
 
 
-# evaluates the models
+# parent model class
 class Model:
     def __init__(self, datacreator_instance: Datacreator) -> None:
         self.datacreator_instance = datacreator_instance
@@ -19,6 +19,9 @@ class Model:
         pass
 
     def evaluate(self):
+        """
+        Calculates different metrics for the model and saves the metrics as attributes of the class.
+        """
         self.accuracy = accuracy_score(self.datacreator_instance.y_test, self.preds)
         self.precision = precision_score(
             self.datacreator_instance.y_test,
@@ -57,6 +60,12 @@ class Model:
         }
 
     def show_results(self, information_per_class: bool = False):
+        """
+        Prints the evaluation results.
+
+        Args:
+            information_per_class (bool, optional): Set if metrics for each class should be printed. Defaults to False.
+        """
         print(f"{self.model.__class__.__name__}:")
         print("Accuracy:", self.accuracy)
         print("Precision:", self.precision)
@@ -70,6 +79,11 @@ class Model:
                 print(f"  Recall: {metrics['Recall']:.4f}")
 
     def get_errors(self):
+        """Get information about the misclaficiations.
+
+        Returns:
+            tuple(list, list, list): returns information about the wrong predictions.
+        """
         self.x_test = self.datacreator_instance.x_test
         self.y_test = self.datacreator_instance.y_test
         self.preds = self.preds

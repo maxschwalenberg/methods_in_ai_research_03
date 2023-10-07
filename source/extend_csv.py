@@ -5,7 +5,13 @@ from source.config import load_file_paths_configuration
 
 
 def add_new_properties(source_csv_path: str, target_csv_path: str):
-    # function to extend the existing CSV-file by the required properties so the inference task can be done
+    """extend the existing CSV-file by the required properties so the inference task can be done
+
+    Args:
+        source_csv_path (str): path to existing restaurant information
+        target_csv_path (str): path to extended restaurant information
+    """
+    # function to
     food_qualities = ["bad", "decent", "good"]
     crowdedness = ["busy", "not busy"]
     length_stay = ["short", "long", "normal"]
@@ -31,9 +37,7 @@ def add_new_properties(source_csv_path: str, target_csv_path: str):
 
 
 if __name__ == "__main__":
-    file_paths_config = load_file_paths_configuration(
-        "output/data/file_paths_config.json"
-    )
+    file_paths_config = load_file_paths_configuration("output/data/file_paths_config.json")
     add_new_properties(
         file_paths_config.restaurant_info_path,
         file_paths_config.extended_restaurant_info_path,

@@ -2,5 +2,5 @@
     "text_to_speech": false,
     "delay": true,
     "allow_feedback": false,
-    "allow_preference_change": false
+    "allow_preference_change": true
 }
