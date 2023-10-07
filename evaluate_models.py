@@ -260,6 +260,40 @@ print (mostfailslog)
 
 
 
+# Create Data Frame from 3 Models
+data = {
+    'Logistic Reg': [word[0] for word in worsewordslog],
+    'Binary Trees': [word[0] for word in worsewordstree],
+    'Baseline': [word[0] for word in worsewordsbaseline],
+    'Accuracy (%) LR': [word[1][2] for word in worsewordslog],
+    'Accuracy (%) BR': [word[1][2] for word in worsewordstree],
+    'Accuracy (%) B': [word[1][2] for word in worsewordsbaseline],
+    'Corrects LR': [word[1][0] for word in worsewordslog],
+    'Corrects BR': [word[1][0] for word in worsewordstree],
+    'Corrects B': [word[1][0] for word in worsewordsbaseline],
+    'Mistakes LR': [word[1][1] for word in worsewordslog],
+    'Mistakes BR': [word[1][1] for word in worsewordstree],
+    'Mistakes B': [word[1][1] for word in worsewordsbaseline]
+}
+
+df = pd.DataFrame(data)
+
+
+
+
+# Figure MatPlotlib from the dataframe
+fig, ax = plt.subplots(figsize=(8, 6))
+
+# Create a Table from de DataFrame
+table = pd.plotting.table(ax, df, loc='center', cellLoc='center', colWidths=[0.2]*len(df.columns))
+
+table.auto_set_font_size(False)
+table.set_fontsize(12)
+table.scale(1.2, 1.2)
+
+ax.axis('off')
+plt.savefig('output/images/worse_words_models.jpg', bbox_inches='tight', dpi=300)
+
 
 
 
