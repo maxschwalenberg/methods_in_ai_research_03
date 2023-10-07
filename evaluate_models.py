@@ -93,7 +93,13 @@ print(f"Save evaluation results to {filenames_config.evaluation_results_path}")
     x_testerrors_logistic,
     correct_ytest_logistic,
 ) = logistic_regression.get_errors()
-incorrect_preds_tree, x_testerrors_tree, correct_ytest_tree = decision_tree.get_errors()
+
+(
+    incorrect_preds_tree, 
+    x_testerrors_tree, 
+    correct_ytest_tree 
+) = decision_tree.get_errors()
+
 (
     incorrect_preds_baseline,
     x_testerrors_baseline,
@@ -186,3 +192,109 @@ create_word_cloud_subplot(x_testerrors_baseline, "Baseline Model Errors", 3)
 
 plt.tight_layout()
 plt.savefig("output/images/error_words_models.jpg")
+
+
+# How the models perform with the words
+def accuracy_per_word (x_test, y_test, preds):
+
+    # Unique labels (each dialog act) and we create a graphic for each model
+    stringxtestlog = ' '.join(x_test).split()
+    wordslog = np.unique(stringxtestlog)
+    # For each word we save the corrects predictions [0] the failed predictions [1] and the percentage of accuracy [2]
+    word_accuracy = {word: [0, 0, 0] for word in wordslog}
+
+    for i in range(len(x_test)):
+        x_instance = x_test[i]
+        words = x_instance.split()
+        if preds[i] == y_test[i]: #if the prediction is good, we add 1 in 0
+            for word in words:
+                if word in word_accuracy:
+                    word_accuracy[word][0] += 1 
+        
+                
+        else: #if the prediction is good, we add 1 in 1
+            for word in words:
+                if word in word_accuracy:
+                    word_accuracy[word][1] += 1 
+                
+
+    # Get the accuracy of each word, by counting the good predictions and the bad predictions
+    for word, counts in word_accuracy.items():
+        total_appearances = counts[0] + counts[1]
+        if total_appearances > 0:
+            accuracy_percentage = (counts[0] / total_appearances) * 100
+            word_accuracy[word][2] = accuracy_percentage
+
+    return word_accuracy
+
+def obtain_top_worse_words (word_accuracy, k= 10):
+    # Calculate the top k words with worse accuracy
+    sorted_word_accuracy = sorted(word_accuracy.items(), key=lambda x: x[1][2])
+    worst_k_words = sorted_word_accuracy[:k]
+    return worst_k_words
+
+def obtain_top_most_failed_words(word_accuracy, k=10):
+    # Calculate the top k words with most mistakes
+    sorted_word_accuracy = sorted(word_accuracy.items(), key=lambda x: x[1][1], reverse=True)
+    top_k_words = sorted_word_accuracy[:k]
+    return top_k_words
+
+
+wordaccuracylog = accuracy_per_word(logistic_regression.x_test, logistic_regression.y_test, logistic_regression.preds)
+wordaccuracytree = accuracy_per_word(decision_tree.x_test, decision_tree.y_test, decision_tree.preds)
+wordaccuracybaseline = accuracy_per_word(rule_based_baseline.x_test, rule_based_baseline.y_test, rule_based_baseline.preds)
+# Each word accuracy has every word and it saves corrects [0] fails [1] and percentage [2]
+
+# The topkwords worse percentage
+worsewordslog = obtain_top_worse_words(wordaccuracylog)
+worsewordstree = obtain_top_worse_words(wordaccuracytree)
+worsewordsbaseline = obtain_top_worse_words(wordaccuracybaseline)
+
+# The topkwords most failed  
+mostfailslog = obtain_top_most_failed_words(wordaccuracylog)
+mostfailstree = obtain_top_most_failed_words(wordaccuracytree)
+mostfailsbaseline = obtain_top_most_failed_words(wordaccuracybaseline)
+
+print(worsewordslog)
+print (mostfailslog)
+
+
+
+# Create Data Frame from 3 Models
+data = {
+    'Logistic Reg': [word[0] for word in worsewordslog],
+    'Binary Trees': [word[0] for word in worsewordstree],
+    'Baseline': [word[0] for word in worsewordsbaseline],
+    'Accuracy (%) LR': [word[1][2] for word in worsewordslog],
+    'Accuracy (%) BR': [word[1][2] for word in worsewordstree],
+    'Accuracy (%) B': [word[1][2] for word in worsewordsbaseline],
+    'Corrects LR': [word[1][0] for word in worsewordslog],
+    'Corrects BR': [word[1][0] for word in worsewordstree],
+    'Corrects B': [word[1][0] for word in worsewordsbaseline],
+    'Mistakes LR': [word[1][1] for word in worsewordslog],
+    'Mistakes BR': [word[1][1] for word in worsewordstree],
+    'Mistakes B': [word[1][1] for word in worsewordsbaseline]
+}
+
+df = pd.DataFrame(data)
+
+
+
+
+# Figure MatPlotlib from the dataframe
+fig, ax = plt.subplots(figsize=(8, 6))
+
+# Create a Table from de DataFrame
+table = pd.plotting.table(ax, df, loc='center', cellLoc='center', colWidths=[0.2]*len(df.columns))
+
+table.auto_set_font_size(False)
+table.set_fontsize(12)
+table.scale(1.2, 1.2)
+
+ax.axis('off')
+plt.savefig('output/images/worse_words_models.jpg', bbox_inches='tight', dpi=300)
+
+
+
+
+
