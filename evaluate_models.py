@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from wordcloud import WordCloud
 from source.config import load_file_paths_configuration
+from collections import defaultdict
 
 
 from source.datacreator import Datacreator
@@ -227,7 +228,7 @@ def accuracy_per_word (x_test, y_test, preds):
 
     return word_accuracy
 
-def obtain_top_worse_words (word_accuracy, k= 10):
+def obtain_top_worse_words (word_accuracy, k= 20):
     # Calculate the top k words with worse accuracy
     sorted_word_accuracy = sorted(word_accuracy.items(), key=lambda x: x[1][2])
     worst_k_words = sorted_word_accuracy[:k]
@@ -255,8 +256,6 @@ mostfailslog = obtain_top_most_failed_words(wordaccuracylog)
 mostfailstree = obtain_top_most_failed_words(wordaccuracytree)
 mostfailsbaseline = obtain_top_most_failed_words(wordaccuracybaseline)
 
-print(worsewordslog)
-print (mostfailslog)
 
 
 
@@ -294,7 +293,61 @@ table.scale(1.2, 1.2)
 ax.axis('off')
 plt.savefig('output/images/worse_words_models.jpg', bbox_inches='tight', dpi=300)
 
+from collections import defaultdict
+
+def calculate_average_error_by_length(x_test, y_test, preds):
+    # Create dictionaries to store predictions and labels by sentence length
+    predictions_by_length = defaultdict(list)
+    labels_by_length = defaultdict(list)
+
+    # Fill the dictionaries with predictions and labels based on sentence length
+    for i in range(len(x_test)):
+        x_instance = x_test[i]
+        length = len(x_instance.split())  
+
+        # Add predictions and labels to the dictionaries based on length
+        predictions_by_length[length].append(preds[i])
+        labels_by_length[length].append(y_test[i])
+
+    # Calculate average accuracy for each sentence length
+    accuracy_by_length = {}
+    for length, preds in predictions_by_length.items():
+        labels = labels_by_length[length]
+
+        correct_count = sum(1 for pred, label in zip(preds, labels) if pred == label)
+        total_count = len(preds)
+
+        if total_count > 0:
+            accuracy = correct_count / total_count
+        else:
+            accuracy = 0.0
+
+        accuracy_by_length[length] = accuracy
+
+    # Calculate the average error for each sentence length
+    error_by_length = {length: 1.0 - accuracy for length, accuracy in accuracy_by_length.items()}
+    sorted_error_by_length = dict(sorted(error_by_length.items()))
+
+    return sorted_error_by_length
 
 
 
+def plot_average_errors_by_length(error_by_length):
 
+    lengths = list(error_by_length.keys())
+    errors = list(error_by_length.values())
+
+    # Create a scatter plot
+    plt.figure(figsize=(10, 6))
+    plt.scatter(lengths, errors, c='royalblue', marker='o', s=100)
+    plt.xlabel('Sentence Length')
+    plt.ylabel('Average Error')
+    plt.title('Average Error by Sentence Length')
+    plt.xticks(lengths)
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+
+    plt.show()
+
+error_by_length = calculate_average_error_by_length(logistic_regression.x_test, logistic_regression.y_test, logistic_regression.preds)
+print(error_by_length)
+plot_average_errors_by_length(error_by_length)
