@@ -70,19 +70,19 @@ class Model:
                 print(f"  Recall: {metrics['Recall']:.4f}")
 
     def get_errors(self):
-        x_test = self.datacreator_instance.x_test
-        y_test = self.datacreator_instance.y_test
-        preds = self.preds
+        self.x_test = self.datacreator_instance.x_test
+        self.y_test = self.datacreator_instance.y_test
+        self.preds = self.preds
 
         incorrect_preds = []
         incorrect_x_test = []
         correct_y_test = []
 
         # We save the predictions where the model have made a mistake
-        for i in range(len(y_test)):
-            if preds[i] != y_test[i]:
-                incorrect_preds.append(preds[i])
-                incorrect_x_test.append(x_test[i])
-                correct_y_test.append(y_test[i])
+        for i in range(len(self.y_test)):
+            if self.preds[i] != self.y_test[i]:
+                incorrect_preds.append(self.preds[i])
+                incorrect_x_test.append(self.x_test[i])
+                correct_y_test.append(self.y_test[i])
 
         return incorrect_preds, incorrect_x_test, correct_y_test

@@ -93,7 +93,13 @@ print(f"Save evaluation results to {filenames_config.evaluation_results_path}")
     x_testerrors_logistic,
     correct_ytest_logistic,
 ) = logistic_regression.get_errors()
-incorrect_preds_tree, x_testerrors_tree, correct_ytest_tree = decision_tree.get_errors()
+
+(
+    incorrect_preds_tree, 
+    x_testerrors_tree, 
+    correct_ytest_tree 
+) = decision_tree.get_errors()
+
 (
     incorrect_preds_baseline,
     x_testerrors_baseline,
@@ -186,3 +192,36 @@ create_word_cloud_subplot(x_testerrors_baseline, "Baseline Model Errors", 3)
 
 plt.tight_layout()
 plt.savefig("output/images/error_words_models.jpg")
+
+
+# How the models perform with the words
+
+# Unique labels (each dialog act) and we create a graphic for each model
+stringxtestlog = ' '.join(logistic_regression.x_test).split()
+wordslog = np.unique(stringxtestlog)
+# For each word we save the corrects predictions [0] the failed predictions [1] and the percentage of accuracy [2]
+word_accuracy_log = {word: [0, 0, 0] for word in wordslog}
+
+for i in range(len(logistic_regression.x_test)):
+    x_instance = logistic_regression.x_test[i]
+    words = x_instance.split()
+    if logistic_regression.preds[i] == logistic_regression.y_test[i]: #if the prediction is good, we add 1 in 0
+        for word in words:
+            if word in word_accuracy_log:
+                word_accuracy_log[word][0] += 1 
+    
+            
+    else: #if the prediction is good, we add 1 in 1
+        for word in words:
+            if word in word_accuracy_log:
+                word_accuracy_log[word][1] += 1 
+            
+
+# Get the accuracy of each word, by counting the good predictions and the bad predictions
+for word, counts in word_accuracy_log.items():
+    total_appearances = counts[0] + counts[1]
+    if total_appearances > 0:
+        accuracy_percentage = (counts[0] / total_appearances) * 100
+        word_accuracy_log[word][2] = accuracy_percentage
+
+print(word_accuracy_log)
