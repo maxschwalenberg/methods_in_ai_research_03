@@ -291,6 +291,9 @@ class Welcome(State):
             )
             return AskForInformation(self.info)
 
+        else:
+            return Welcome(self.info)
+
 
 class AskForInformation(State):
     def __init__(self, info: Info) -> None:
@@ -687,6 +690,8 @@ class GiveDetails(State):
                 self.info,
                 self.previous_suggestion_index,
             )
+        else:
+            return Goodbye(self.info)
 
 
 class Goodbye(State):
