@@ -104,55 +104,64 @@ incorrect_preds_tree, x_testerrors_tree, correct_ytest_tree = decision_tree.get_
 dialogs_acts = np.unique(
     np.concatenate([correct_ytest_logistic, correct_ytest_tree, correct_ytest_baseline])
 )
-plt.figure(figsize=(12, 6))
 
-# Logistic Regression
-plt.subplot(131)
-plt.hist(
+fig, axs = plt.subplots(1, 3, figsize=(15, 5))
+
+# 1 - Logistic Regression
+axs[0].hist(
     incorrect_preds_logistic,
     bins=len(dialogs_acts),
     alpha=0.5,
     color="red",
     label="Incorrect (Logistic)",
 )
-plt.xticks(range(len(dialogs_acts)), dialogs_acts)
-plt.xticks(rotation=90)
-plt.xlabel("Dialog Act")
-plt.ylabel("Frequency")
-plt.legend()
-plt.title("Error in predictions (Logistic)")
+axs[0].set_xticks(range(len(dialogs_acts)))
+axs[0].set_xticklabels(dialogs_acts, rotation=90)
+axs[0].set_xlabel("Dialog Act")
+axs[0].set_ylabel("Frequency")
+axs[0].legend()
+axs[0].set_title("Error in predictions (Logistic)")
 
-# Binary Trees
-plt.subplot(132)
-plt.hist(
+# 2 - Binary Trees
+axs[1].hist(
     incorrect_preds_tree,
     bins=len(dialogs_acts),
     alpha=0.5,
     color="blue",
     label="Incorrect (Tree)",
 )
-plt.xticks(range(len(dialogs_acts)), dialogs_acts)
-plt.xticks(rotation=90)
-plt.xlabel("Dialog Act")
-plt.ylabel("Frequency ")
-plt.legend()
-plt.title("Error in predictions (Tree)")
+axs[1].set_xticks(range(len(dialogs_acts)))
+axs[1].set_xticklabels(dialogs_acts, rotation=90)
+axs[1].set_xlabel("Dialog Act")
+axs[1].set_ylabel("Frequency")
+axs[1].legend()
+axs[1].set_title("Error in predictions (Tree)")
 
-# Baseline Model
-plt.subplot(133)
-plt.hist(
+# 3 - Baseline Model
+axs[2].hist(
     incorrect_preds_baseline,
     bins=len(dialogs_acts),
     alpha=0.5,
     color="green",
     label="Incorrect (Baseline)",
 )
-plt.xticks(range(len(dialogs_acts)), dialogs_acts)
-plt.xticks(rotation=90)
-plt.xlabel("Dialog Act")
-plt.ylabel("Frequency")
-plt.legend()
-plt.title("Error in predictions (Baseline)")
+axs[2].set_xticks(range(len(dialogs_acts)))
+axs[2].set_xticklabels(dialogs_acts, rotation=90)
+axs[2].set_xlabel("Dialog Act")
+axs[2].set_ylabel("Frequency")
+axs[2].legend()
+axs[2].set_title("Error in predictions (Baseline)")
+
+# Obtain the max value 
+max_freq = max(
+    max(axs[0].get_yticks()),
+    max(axs[1].get_yticks()),
+    max(axs[2].get_yticks())
+)
+
+# Use the same scale for each graph
+for ax in axs:
+    ax.set_ylim(0, max_freq)
 
 plt.tight_layout()
 plt.savefig("output/images/error_predictions_models.jpg")
