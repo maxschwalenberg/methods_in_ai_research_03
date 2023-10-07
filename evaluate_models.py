@@ -44,7 +44,9 @@ for remove_duplicate in remove_duplicates_options:
     ]
 
     # Rule-Based Baseline
-    rule_based_baseline = RuleBasedBaseline(datacreator_instance, filenames_config.baseline_rules_path)
+    rule_based_baseline = RuleBasedBaseline(
+        datacreator_instance, filenames_config.baseline_rules_path
+    )
     rule_based_baseline.develop()
 
     # add results to dataframe
@@ -95,11 +97,7 @@ print(f"Save evaluation results to {filenames_config.evaluation_results_path}")
     correct_ytest_logistic,
 ) = logistic_regression.get_errors()
 
-(
-    incorrect_preds_tree, 
-    x_testerrors_tree, 
-    correct_ytest_tree 
-) = decision_tree.get_errors()
+(incorrect_preds_tree, x_testerrors_tree, correct_ytest_tree) = decision_tree.get_errors()
 
 (
     incorrect_preds_baseline,
@@ -159,11 +157,9 @@ axs[2].set_ylabel("Frequency")
 axs[2].legend()
 axs[2].set_title("Error in predictions (Baseline)")
 
-# Obtain the max value 
+# Obtain the max value
 max_freq = max(
-    max(axs[0].get_yticks()),
-    max(axs[1].get_yticks()),
-    max(axs[2].get_yticks())
+    max(axs[0].get_yticks()), max(axs[1].get_yticks()), max(axs[2].get_yticks())
 )
 
 # Use the same scale for each graph
@@ -196,10 +192,9 @@ plt.savefig("output/images/error_words_models.jpg")
 
 
 # How the models perform with the words
-def accuracy_per_word (x_test, y_test, preds):
-
+def accuracy_per_word(x_test, y_test, preds):
     # Unique labels (each dialog act) and we create a graphic for each model
-    stringxtestlog = ' '.join(x_test).split()
+    stringxtestlog = " ".join(x_test).split()
     wordslog = np.unique(stringxtestlog)
     # For each word we save the corrects predictions [0] the failed predictions [1] and the percentage of accuracy [2]
     word_accuracy = {word: [0, 0, 0] for word in wordslog}
@@ -207,17 +202,15 @@ def accuracy_per_word (x_test, y_test, preds):
     for i in range(len(x_test)):
         x_instance = x_test[i]
         words = x_instance.split()
-        if preds[i] == y_test[i]: #if the prediction is good, we add 1 in 0
+        if preds[i] == y_test[i]:  # if the prediction is good, we add 1 in 0
             for word in words:
                 if word in word_accuracy:
-                    word_accuracy[word][0] += 1 
-        
-                
-        else: #if the prediction is good, we add 1 in 1
+                    word_accuracy[word][0] += 1
+
+        else:  # if the prediction is good, we add 1 in 1
             for word in words:
                 if word in word_accuracy:
-                    word_accuracy[word][1] += 1 
-                
+                    word_accuracy[word][1] += 1
 
     # Get the accuracy of each word, by counting the good predictions and the bad predictions
     for word, counts in word_accuracy.items():
@@ -228,24 +221,38 @@ def accuracy_per_word (x_test, y_test, preds):
 
     return word_accuracy
 
-def obtain_top_worse_words (word_accuracy, k= 10, threshold = 2):
+
+def obtain_top_worse_words(word_accuracy, k=10, threshold=2):
     # Calculate the top k words with worse accuracy
-    filtered_word_accuracy = [(word, accuracy) for word, accuracy in word_accuracy.items() if accuracy[1] > threshold]
+    filtered_word_accuracy = [
+        (word, accuracy)
+        for word, accuracy in word_accuracy.items()
+        if accuracy[1] > threshold
+    ]
     sorted_word_accuracy = sorted(filtered_word_accuracy, key=lambda x: x[1][2])
 
     worst_k_words = sorted_word_accuracy[:k]
     return worst_k_words
 
+
 def obtain_top_most_failed_words(word_accuracy, k=10):
     # Calculate the top k words with most mistakes
-    sorted_word_accuracy = sorted(word_accuracy.items(), key=lambda x: x[1][1], reverse=True)
+    sorted_word_accuracy = sorted(
+        word_accuracy.items(), key=lambda x: x[1][1], reverse=True
+    )
     top_k_words = sorted_word_accuracy[:k]
     return top_k_words
 
 
-wordaccuracylog = accuracy_per_word(logistic_regression.x_test, logistic_regression.y_test, logistic_regression.preds)
-wordaccuracytree = accuracy_per_word(decision_tree.x_test, decision_tree.y_test, decision_tree.preds)
-wordaccuracybaseline = accuracy_per_word(rule_based_baseline.x_test, rule_based_baseline.y_test, rule_based_baseline.preds)
+wordaccuracylog = accuracy_per_word(
+    logistic_regression.x_test, logistic_regression.y_test, logistic_regression.preds
+)
+wordaccuracytree = accuracy_per_word(
+    decision_tree.x_test, decision_tree.y_test, decision_tree.preds
+)
+wordaccuracybaseline = accuracy_per_word(
+    rule_based_baseline.x_test, rule_based_baseline.y_test, rule_based_baseline.preds
+)
 # Each word accuracy has every word and it saves corrects [0] fails [1] and percentage [2]
 
 # The topkwords worse percentage
@@ -253,7 +260,7 @@ worsewordslog = obtain_top_worse_words(wordaccuracylog)
 worsewordstree = obtain_top_worse_words(wordaccuracytree)
 worsewordsbaseline = obtain_top_worse_words(wordaccuracybaseline)
 
-# The topkwords most failed  
+# The topkwords most failed
 mostfailslog = obtain_top_most_failed_words(wordaccuracylog)
 mostfailstree = obtain_top_most_failed_words(wordaccuracytree)
 mostfailsbaseline = obtain_top_most_failed_words(wordaccuracybaseline)
@@ -261,10 +268,10 @@ mostfailsbaseline = obtain_top_most_failed_words(wordaccuracybaseline)
 
 max_length = max(len(worsewordslog), len(worsewordstree), len(worsewordsbaseline))
 
-# File with empty lists 
-#worsewordslog += [('', [0, 0, 0])] * (max_length - len(worsewordslog))
-#worsewordstree += [('', [0, 0, 0])] * (max_length - len(worsewordstree))
-#worsewordsbaseline += [('', [0, 0, 0])] * (max_length - len(worsewordsbaseline))
+# File with empty lists
+# worsewordslog += [('', [0, 0, 0])] * (max_length - len(worsewordslog))
+# worsewordstree += [('', [0, 0, 0])] * (max_length - len(worsewordstree))
+# worsewordsbaseline += [('', [0, 0, 0])] * (max_length - len(worsewordsbaseline))
 
 min_length = min(len(worsewordslog), len(worsewordstree), len(worsewordsbaseline))
 
@@ -275,37 +282,37 @@ worsewordsbaseline = worsewordsbaseline[:min_length]
 
 # Create Data Frame from 3 Models
 data = {
-    'Logistic Reg': [word[0] for word in worsewordslog],
-    'Decision Trees': [word[0] for word in worsewordstree],
-    'Baseline': [word[0] for word in worsewordsbaseline],
-    'Accuracy (%) LR': [round(word[1][2],2) for word in worsewordslog],
-    'Accuracy (%) DT': [round(word[1][2],2) for word in worsewordstree],
-    'Accuracy (%) B': [round(word[1][2],2) for word in worsewordsbaseline],
-    'Corrects LR': [word[1][0] for word in worsewordslog],
-    'Corrects DT': [word[1][0] for word in worsewordstree],
-    'Corrects B': [word[1][0] for word in worsewordsbaseline],
-    'Mistakes LR': [word[1][1] for word in worsewordslog],
-    'Mistakes DT': [word[1][1] for word in worsewordstree],
-    'Mistakes B': [word[1][1] for word in worsewordsbaseline]
+    "Logistic Reg": [word[0] for word in worsewordslog],
+    "Decision Trees": [word[0] for word in worsewordstree],
+    "Baseline": [word[0] for word in worsewordsbaseline],
+    "Accuracy (%) LR": [round(word[1][2], 2) for word in worsewordslog],
+    "Accuracy (%) DT": [round(word[1][2], 2) for word in worsewordstree],
+    "Accuracy (%) B": [round(word[1][2], 2) for word in worsewordsbaseline],
+    "Corrects LR": [word[1][0] for word in worsewordslog],
+    "Corrects DT": [word[1][0] for word in worsewordstree],
+    "Corrects B": [word[1][0] for word in worsewordsbaseline],
+    "Mistakes LR": [word[1][1] for word in worsewordslog],
+    "Mistakes DT": [word[1][1] for word in worsewordstree],
+    "Mistakes B": [word[1][1] for word in worsewordsbaseline],
 }
 
 df = pd.DataFrame(data)
-
-
 
 
 # Figure MatPlotlib from the dataframe
 fig, ax = plt.subplots(figsize=(8, 6))
 
 # Create a Table from de DataFrame
-table = pd.plotting.table(ax, df, loc='center', cellLoc='center', colWidths=[0.2]*len(df.columns))
+table = pd.plotting.table(
+    ax, df, loc="center", cellLoc="center", colWidths=[0.2] * len(df.columns)
+)
 
 table.auto_set_font_size(False)
 table.set_fontsize(12)
 table.scale(1.2, 1.2)
 
-ax.axis('off')
-plt.savefig('output/images/worse_words_models.jpg', bbox_inches='tight', dpi=300)
+ax.axis("off")
+plt.savefig("output/images/worse_words_models.jpg", bbox_inches="tight", dpi=300)
 
 
 def calculate_average_error_by_length(x_test, y_test, preds):
@@ -316,7 +323,7 @@ def calculate_average_error_by_length(x_test, y_test, preds):
     # Fill the dictionaries with predictions and labels based on sentence length
     for i in range(len(x_test)):
         x_instance = x_test[i]
-        length = len(x_instance.split())  
+        length = len(x_instance.split())
 
         # Add predictions and labels to the dictionaries based on length
         predictions_by_length[length].append(preds[i])
@@ -338,11 +345,12 @@ def calculate_average_error_by_length(x_test, y_test, preds):
         accuracy_by_length[length] = accuracy
 
     # Calculate the average error for each sentence length
-    error_by_length = {length: 1.0 - accuracy for length, accuracy in accuracy_by_length.items()}
+    error_by_length = {
+        length: 1.0 - accuracy for length, accuracy in accuracy_by_length.items()
+    }
     sorted_error_by_length = dict(sorted(error_by_length.items()))
 
     return sorted_error_by_length
-
 
 
 def plot_average_errors_by_length(error_by_length_list):
@@ -368,29 +376,33 @@ def plot_average_errors_by_length(error_by_length_list):
         lengths = list(error_by_length.keys())
         errors = list(error_by_length.values())
 
-        axs[i].scatter(lengths, errors, c='royalblue', marker='o', s=100)
-        axs[i].set_xlabel('Sentence Length')
-        axs[i].set_ylabel('Average Error')
+        axs[i].scatter(lengths, errors, c="royalblue", marker="o", s=100)
+        axs[i].set_xlabel("Sentence Length")
+        axs[i].set_ylabel("Average Error")
         if i == 0:
-            axs[i].set_title(f'Logistic Regression Plot')
+            axs[i].set_title(f"Logistic Regression Plot")
         elif i == 1:
-            axs[i].set_title(f'Decision Tree Plot')
+            axs[i].set_title(f"Decision Tree Plot")
         else:
-            axs[i].set_title(f'Baseline Plot')
+            axs[i].set_title(f"Baseline Plot")
         axs[i].set_xticks(lengths)
-        axs[i].set_xlim([min_length, max_length])  
-        axs[i].set_ylim([min_error, max_error])   
-        axs[i].grid(axis='y', linestyle='--', alpha=0.7)
+        axs[i].set_xlim([min_length, max_length])
+        axs[i].set_ylim([min_error, max_error])
+        axs[i].grid(axis="y", linestyle="--", alpha=0.7)
 
     plt.tight_layout()
-    plt.savefig('output/images/utterance_relation.jpg', bbox_inches='tight', dpi=300)
-   
+    plt.savefig("output/images/utterance_relation.jpg", bbox_inches="tight", dpi=300)
 
 
-
-error_by_lengthlog = calculate_average_error_by_length(logistic_regression.x_test, logistic_regression.y_test, logistic_regression.preds)
-error_by_lengthtree = calculate_average_error_by_length(decision_tree.x_test, decision_tree.y_test, decision_tree.preds)
-error_by_lengthbaseline = calculate_average_error_by_length(rule_based_baseline.x_test, rule_based_baseline.y_test, rule_based_baseline.preds)
+error_by_lengthlog = calculate_average_error_by_length(
+    logistic_regression.x_test, logistic_regression.y_test, logistic_regression.preds
+)
+error_by_lengthtree = calculate_average_error_by_length(
+    decision_tree.x_test, decision_tree.y_test, decision_tree.preds
+)
+error_by_lengthbaseline = calculate_average_error_by_length(
+    rule_based_baseline.x_test, rule_based_baseline.y_test, rule_based_baseline.preds
+)
 
 error_by_length_list = [error_by_lengthlog, error_by_lengthtree, error_by_lengthbaseline]
 plot_average_errors_by_length(error_by_length_list)

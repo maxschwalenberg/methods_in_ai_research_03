@@ -694,7 +694,11 @@ class Contradiction(State):
         self.explanation_string = explanation_string
 
     def dialog(self):
-        message = self.explanation_string + " The additional requirement was removed."
+        message = (
+            "System: "
+            + self.explanation_string
+            + " The additional requirement was removed."
+        )
         self.print(message)
         user_utterance = "temporary string"
 
