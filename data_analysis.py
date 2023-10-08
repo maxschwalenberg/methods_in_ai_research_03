@@ -185,7 +185,6 @@ for dialogact in dialogsacts:
 
     top_words_by_dialog_act[dialogact] = top_words
 
-# print(top_words_by_dialog_act)
 
 # Would be useful to show the top words by a dialgo act
 # Example:
