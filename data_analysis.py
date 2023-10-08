@@ -98,7 +98,7 @@ plt.pie(
     startangle=140,
 )
 plt.title("Distribution of Dialog Acts (with duplicates)")
-plt.axis("equal")  
+plt.axis("equal")
 plt.savefig("output/images/pie_chart_with_duplicates.jpg")
 
 # 2 - Length of the utterances
@@ -184,8 +184,3 @@ for dialogact in dialogsacts:
     top_words = get_top_words(text_for_dialogact, number_of_words)
 
     top_words_by_dialog_act[dialogact] = top_words
-
-
-# Would be useful to show the top words by a dialgo act
-# Example:
-# request': {'the': 483, 'number': 374, 'phone': 371, 'address': 361, 'what': 198}, 'hello': {'hi': 8, 'hello': 6, 'im': 6, 'looking': 6, 'for': 6}
