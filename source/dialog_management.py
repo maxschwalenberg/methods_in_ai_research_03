@@ -57,9 +57,7 @@ class DialogManagement:
     def fetch_keywords(self, filename):
         file = open(filename)
         file = csv.DictReader(file)
-        keyword_names = file.fieldnames[
-            1:4
-        ]  # incongruent with preference_extraction.py
+        keyword_names = file.fieldnames[1:4]  # incongruent with preference_extraction.py
         keyword_dict = {key: set() for key in keyword_names}
 
         for row in file:
@@ -86,8 +84,10 @@ def pattern_match_request(data):
 
     if re.findall("phone", data) != []:
         return "phone"
-    elif re.match("address", data) != []:
+    elif re.findall("address", data) != []:
         return "address"
+    elif re.findall("postcode", data) != []:
+        return "postcode"
     else:
         return None
 
@@ -144,14 +144,14 @@ def pattern_match_keyword_extraction(data, keyword_dict, context: str):
                 for key in keyword_dict.keys():
                     # Specific levdistance handling for the "pricerange" keyword
                     # so that "price" and "priced" are also accepted.
-                    if(key == "pricerange"):
-                      if levdistance(word, key) <= 5:
-                        result[key] = "Any"
+                    if key == "pricerange":
+                        if levdistance(word, key) <= 5:
+                            result[key] = "Any"
                     else:
                         if levdistance(word, key) <= 2:
                             result[key] = "Any"
-        elif (context in keyword_dict.keys()):
-             result[context] = "Any"
+        elif context in keyword_dict.keys():
+            result[context] = "Any"
 
     return result
 
@@ -263,6 +263,11 @@ class State:
     def dialog(self):
         self.user_utterance = input("User: ")
 
+    def print(self, message: str):
+        print(message)
+        if self.info.t2s:
+            text_to_speech(message)
+
     def transition(self, input):
         pass
 
@@ -273,9 +278,7 @@ class Welcome(State):
 
     def dialog(self):
         message = f"System: {self.feedback_string}Hello, welcome to the restaurant recommender system. You can ask for restaurants by area/price range/food type. How may I help you?"
-        print(message)
-        if self.info.t2s:
-            text_to_speech(message)
+        self.print(message)
         user_utterance = super().dialog()
 
         return user_utterance
@@ -326,9 +329,7 @@ class AskArea(State):
 
     def dialog(self):
         message = f"System: {self.feedback_string}Which area do you want to go?"
-        print(message)
-        if self.info.t2s:
-            text_to_speech(message)
+        self.print(message)
 
         user_utterance = super().dialog()
 
@@ -390,12 +391,8 @@ class AskPrice(State):
         super().__init__(info)
 
     def dialog(self):
-        message = (
-            f"System: {self.feedback_string}How expensive should the restaurant be?"
-        )
-        print(message)
-        if self.info.t2s:
-            text_to_speech(message)
+        message = f"System: {self.feedback_string}How expensive should the restaurant be?"
+        self.print(message)
 
         user_utterance = super().dialog()
 
@@ -445,9 +442,7 @@ class AskType(State):
 
     def dialog(self):
         message = f"System: {self.feedback_string}What type of food would you like?"
-        print(message)
-        if self.info.t2s:
-            text_to_speech(message)
+        self.print(message)
 
         user_utterance = super().dialog()
 
@@ -498,9 +493,7 @@ class AskForAdditionalInformation(State):
 
     def dialog(self):
         message = f"System: {self.feedback_string}Do you have additional requirements?"
-        print(message)
-        if self.info.t2s:
-            text_to_speech(message)
+        self.print(message)
         user_utterance = super().dialog()
 
         return user_utterance
@@ -510,11 +503,7 @@ class AskForAdditionalInformation(State):
             return Welcome(self.info)
         elif input == "bye":
             return Goodbye(self.info)
-        elif (
-            # why negate or negate?
-            input == "negate"
-            or input == "negate"
-        ):  # if the user negate the ask, we should ask again ?? Should this go to suggestion?
+        elif input == "negate":
             return Suggestion(self.info)
         elif input == "inform":
             extracted_preferences = additional_keyword_extraction(self.user_utterance)
@@ -530,7 +519,7 @@ class AskForAdditionalInformation(State):
                 )
 
                 if contradiction_present:
-                    print(f"System: {explanation_string}")
+                    self.print(f"System: {explanation_string}")
                     return AskForAdditionalInformation(self.info)
 
             # if we want to allow preferences to be overwritten
@@ -562,12 +551,10 @@ class Suggestion(State):
         self.suggestions = None
 
     def dialog(self):
-        self.suggestions = self.restaurant_lookup.lookup(
-            self.info.extracted_preferences
-        )
+        self.suggestions = self.restaurant_lookup.lookup(self.info.extracted_preferences)
         if not self.suggestions.empty:
             random_index = self.previous_suggestion_index
-            if len(self.suggestions.values) > 1:   
+            if len(self.suggestions.values) > 1:
                 while self.previous_suggestion_index == random_index:
                     random_index = random.randrange(0, (len(self.suggestions.values)))
             self.previous_suggestion_index = random_index
@@ -577,15 +564,11 @@ class Suggestion(State):
             if "additional_requirement" in self.info.extracted_preferences:
                 message += f" {self.restaurant_lookup.explain_inference(self.suggestions.iloc[random_index], self.info.extracted_preferences['additional_requirement'])}"
 
-            print(message)
-            if self.info.t2s:
-                text_to_speech(message)
+            self.print(message)
 
         else:
             message = "System: No restaurants found."
-            print(message)
-            if self.info.t2s:
-                text_to_speech(message)
+            self.print(message)
         user_utterance = super().dialog()
 
         return user_utterance
@@ -654,12 +637,13 @@ class GiveDetails(State):
         elif request_type == "address":
             message = f"System: {self.feedback_string}The address number of this restaurant is: {self.suggestions[self.previous_suggestion_index][5]}"
 
+        elif request_type == "postcode":
+            message = f"System: {self.feedback_string}The postcode of this restaurant is: {self.suggestions[self.previous_suggestion_index][6]}"
+
         else:
             message = "Sorry I can't understand this request"
 
-        print(message)
-        if self.info.t2s:
-            text_to_speech(message)
+        self.print(message)
 
         user_utterance = super().dialog()
         return user_utterance
@@ -687,7 +671,7 @@ class GiveDetails(State):
                 self.info,
                 self.suggestions,
                 self.previous_suggestion_index,
-                self.request_utterance,
+                self.user_utterance,
             )
         elif input == "negate" or input == "reqalts":
             return Suggestion(
@@ -705,9 +689,7 @@ class Goodbye(State):
     def dialog(self):
         message = "System: Goodbye, have a nice day!"
 
-        print(message)
-        if self.info.t2s:
-            text_to_speech(message)
+        self.print(message)
 
     def run(self):
         self.dialog()
