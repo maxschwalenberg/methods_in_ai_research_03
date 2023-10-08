@@ -55,11 +55,19 @@ class DialogManagement:
         self.current_state.run()
 
     def fetch_keywords(self, filename):
+        """Fetches all the keywords which are needed for the keyword extraction
+
+        Args:
+            filename (str): The filename where the keywords are located
+        """
         file = open(filename)
         file = csv.DictReader(file)
-        keyword_names = file.fieldnames[1:4]  # incongruent with preference_extraction.py
+        # Fetch the specific colums which are needed for keyword extraction
+        # In this case |pricerange|area|food|
+        keyword_names = file.fieldnames[1:4]
         keyword_dict = {key: set() for key in keyword_names}
 
+        # Filter out all the empty keywords
         for row in file:
             for keyword in keyword_names:
                 if (row[keyword]) != "":
@@ -80,6 +88,14 @@ def text_to_speech(message: str):
 
 # need to add postcode?
 def pattern_match_request(data):
+    """Extracts the specific request type
+
+    Args:
+        data (str): The input utterance
+
+    Returns:
+        str : The request type
+    """
     data = data.lower()
 
     if re.findall("phone", data) != []:
@@ -93,17 +109,28 @@ def pattern_match_request(data):
 
 
 def pattern_match_keyword_extraction(data, keyword_dict, context: str):
+    """Finds preferences within an utterance
+
+    Args:
+        data (str): The input utterance
+        keyword_dict (dict): The dictionary containing all possible keywords
+        context (str): The context of this conversation (ask area, ask pricerange etc.)
+
+    Returns:
+        dict: A dictionary of the extracted preferences
+    """
     data = data.lower()
     temp = None
     result = {}
 
     # Keyword search
+    # Search if there correct spelled keywords within the utterance
     for key, values in keyword_dict.items():
         for value in values:
             if temp := (re.findall(r"\b" + value + r"\b", data)):
                 result[key] = value
 
-    # Pattern search to find the possible misspelled keywords
+    # Then do pattern search to find the possible misspelled keywords
 
     # Check for food keyword pattern (* food)
     # Example: "I want to eat (chinese) food"
@@ -139,6 +166,7 @@ def pattern_match_keyword_extraction(data, keyword_dict, context: str):
     # Check for any keyword pattern (any *)
     # Example: "I want any (food)/(area)/(pricerange)"
     if re.search(r"\b" + "any" + r"\b", data) and (len(result) != 3):
+        # Check if the any keyword is bounded to a context within the utterance
         if temp := re.findall("any (\w+)", data):
             for word in temp:
                 for key in keyword_dict.keys():
@@ -147,9 +175,11 @@ def pattern_match_keyword_extraction(data, keyword_dict, context: str):
                     if key == "pricerange":
                         if levdistance(word, key) <= 5:
                             result[key] = "Any"
+                    # If not check for "area" and "food"
                     else:
                         if levdistance(word, key) <= 2:
                             result[key] = "Any"
+        # Otherwise check the context for this conversation
         elif context in keyword_dict.keys():
             result[context] = "Any"
 
@@ -157,14 +187,25 @@ def pattern_match_keyword_extraction(data, keyword_dict, context: str):
 
 
 def additional_keyword_extraction(data):
+    """Extract the additional information keywords
+
+    Args:
+        data (str): The input utterance
+
+    Returns:
+        dict: A dictionary containing the extracted additional preferences
+    """
     result = {}
+    # Create list with the additional preferences
     add_list = [
         "touristic",
         "assigned seats",
         "children",
         "romantic",
     ]
+    # Split the utterance into a list of words
     data = data.split()
+    # Check if any word is similair to any of the additional utterances
     for word in data:
         for keyword in add_list:
             if levdistance(word, keyword) <= 2:
@@ -391,7 +432,9 @@ class AskPrice(State):
         super().__init__(info)
 
     def dialog(self):
-        message = f"System: {self.feedback_string}How expensive should the restaurant be?"
+        message = (
+            f"System: {self.feedback_string}How expensive should the restaurant be?"
+        )
         self.print(message)
 
         user_utterance = super().dialog()
@@ -551,7 +594,9 @@ class Suggestion(State):
         self.suggestions = None
 
     def dialog(self):
-        self.suggestions = self.restaurant_lookup.lookup(self.info.extracted_preferences)
+        self.suggestions = self.restaurant_lookup.lookup(
+            self.info.extracted_preferences
+        )
         if not self.suggestions.empty:
             random_index = self.previous_suggestion_index
             if len(self.suggestions.values) > 1:
@@ -694,7 +739,11 @@ class Contradiction(State):
         self.explanation_string = explanation_string
 
     def dialog(self):
-        message = self.explanation_string + " The additional requirement was removed."
+        message = (
+            "System: "
+            + self.explanation_string
+            + " The additional requirement was removed."
+        )
         self.print(message)
         user_utterance = "temporary string"
 
