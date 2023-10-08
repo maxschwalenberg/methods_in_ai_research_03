@@ -65,9 +65,18 @@ to run:
 python evaluate_models.py
 ```
 
-This script generates a .csv-file which contains the performance metrics for each of the models. Each model is evaluate with and without the removal of duplicate utterances (TODO: What is removed again??). 
+This script generates a .csv-file which contains the performance metrics for each of the models. Each model is evaluate with and without the removal of duplicate utterances. In addition, it is studied how is the performance of the models regarding some features (length utterance, dialog acts...).
 
 The default output path of this file is data/eval_results.csv and is hardcoded in the script.
+
+
+## data_analysis.py -> implements 1a
+to run: 
+```bash
+python data_analysis.py
+```
+
+Data analysis focus on the dataset used in this dialog system. The code is used to study the distribution of the data and various aspects from the data preprocessing as the statistics.
 
 ## recommender.py -> implements 1a & 1b (dialog management)
 to run: 
