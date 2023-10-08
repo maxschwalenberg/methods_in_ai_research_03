@@ -678,7 +678,7 @@ class GiveDetails(State):
 
     def dialog(self):
         request_type = pattern_match_request(self.request_utterance)
-
+        # Give the according information with the request type
         if request_type == "phone":
             message = f"System: {self.feedback_string}The phone number of this restaurant is: {self.suggestions[self.previous_suggestion_index][4]}"
 
