@@ -129,7 +129,7 @@ axs[0].set_ylabel("Frequency")
 axs[0].legend()
 axs[0].set_title("Error in predictions (Logistic)")
 
-# 2 - Binary Trees
+# 2 - Decision Trees
 axs[1].hist(
     incorrect_preds_tree,
     bins=len(dialogs_acts),
@@ -228,9 +228,11 @@ def accuracy_per_word (x_test, y_test, preds):
 
     return word_accuracy
 
-def obtain_top_worse_words (word_accuracy, k= 20):
+def obtain_top_worse_words (word_accuracy, k= 10, threshold = 2):
     # Calculate the top k words with worse accuracy
-    sorted_word_accuracy = sorted(word_accuracy.items(), key=lambda x: x[1][2])
+    filtered_word_accuracy = [(word, accuracy) for word, accuracy in word_accuracy.items() if accuracy[1] > threshold]
+    sorted_word_accuracy = sorted(filtered_word_accuracy, key=lambda x: x[1][2])
+
     worst_k_words = sorted_word_accuracy[:k]
     return worst_k_words
 
@@ -257,21 +259,33 @@ mostfailstree = obtain_top_most_failed_words(wordaccuracytree)
 mostfailsbaseline = obtain_top_most_failed_words(wordaccuracybaseline)
 
 
+max_length = max(len(worsewordslog), len(worsewordstree), len(worsewordsbaseline))
 
+# File with empty lists 
+#worsewordslog += [('', [0, 0, 0])] * (max_length - len(worsewordslog))
+#worsewordstree += [('', [0, 0, 0])] * (max_length - len(worsewordstree))
+#worsewordsbaseline += [('', [0, 0, 0])] * (max_length - len(worsewordsbaseline))
+
+min_length = min(len(worsewordslog), len(worsewordstree), len(worsewordsbaseline))
+
+# Cut off until minimal distance
+worsewordslog = worsewordslog[:min_length]
+worsewordstree = worsewordstree[:min_length]
+worsewordsbaseline = worsewordsbaseline[:min_length]
 
 # Create Data Frame from 3 Models
 data = {
     'Logistic Reg': [word[0] for word in worsewordslog],
-    'Binary Trees': [word[0] for word in worsewordstree],
+    'Decision Trees': [word[0] for word in worsewordstree],
     'Baseline': [word[0] for word in worsewordsbaseline],
-    'Accuracy (%) LR': [word[1][2] for word in worsewordslog],
-    'Accuracy (%) BR': [word[1][2] for word in worsewordstree],
-    'Accuracy (%) B': [word[1][2] for word in worsewordsbaseline],
+    'Accuracy (%) LR': [round(word[1][2],2) for word in worsewordslog],
+    'Accuracy (%) DT': [round(word[1][2],2) for word in worsewordstree],
+    'Accuracy (%) B': [round(word[1][2],2) for word in worsewordsbaseline],
     'Corrects LR': [word[1][0] for word in worsewordslog],
-    'Corrects BR': [word[1][0] for word in worsewordstree],
+    'Corrects DT': [word[1][0] for word in worsewordstree],
     'Corrects B': [word[1][0] for word in worsewordsbaseline],
     'Mistakes LR': [word[1][1] for word in worsewordslog],
-    'Mistakes BR': [word[1][1] for word in worsewordstree],
+    'Mistakes DT': [word[1][1] for word in worsewordstree],
     'Mistakes B': [word[1][1] for word in worsewordsbaseline]
 }
 
