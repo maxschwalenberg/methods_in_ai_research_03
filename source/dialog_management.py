@@ -26,6 +26,7 @@ class DialogManagement:
         file_paths_config: FilePathsConfig,
         debug=False,
     ) -> None:
+
         self.classifier = classifier
 
         self.fetch_keywords(file_paths_config.extended_restaurant_info_path)
@@ -86,7 +87,6 @@ def text_to_speech(message: str):
     engine.runAndWait()
 
 
-# need to add postcode?
 def pattern_match_request(data):
     """Extracts the specific request type
 
@@ -247,6 +247,8 @@ class State:
         self.user_utterance = ""
 
     def give_preferences_feedback(self):
+        """ Return the given preferences to the user so that the user is sure that the system acknowledged their request
+        """
         changed_values = {}
 
         for key in self.info.extracted_preferences:

@@ -1,7 +1,7 @@
 from source.dialog_management import DialogManagement
 from source.config import load_configuration, load_file_paths_configuration
 from source.datacreator import Datacreator
-from source.ml_model import LogisticRegressionModel
+from source.ml_model import DecisionTreeModel
 
 
 filenames_config = load_file_paths_configuration("output/data/file_paths_config.json")
@@ -17,9 +17,9 @@ datacreator_with_duplicates.create_dataset()
 
 
 # fit ML Model
-logistic_regression = LogisticRegressionModel(datacreator_with_duplicates)
-logistic_regression.develop()
-logistic_regression.show_results()
+decision_tree = DecisionTreeModel(datacreator_with_duplicates)
+decision_tree.develop()
+decision_tree.show_results()
 
 
 configuration = load_configuration(filenames_config.dialog_config_path)
@@ -27,6 +27,6 @@ configuration = load_configuration(filenames_config.dialog_config_path)
 
 # create the dialog
 dialog_system = DialogManagement(
-    logistic_regression, configuration, filenames_config, debug=False
+    decision_tree, configuration, filenames_config, debug=False
 )
 dialog_system.run_dialog()
