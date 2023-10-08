@@ -378,7 +378,5 @@ error_by_lengthlog = calculate_average_error_by_length(logistic_regression.x_tes
 error_by_lengthtree = calculate_average_error_by_length(decision_tree.x_test, decision_tree.y_test, decision_tree.preds)
 error_by_lengthbaseline = calculate_average_error_by_length(rule_based_baseline.x_test, rule_based_baseline.y_test, rule_based_baseline.preds)
 
-print("ok1")
 error_by_length_list = [error_by_lengthlog, error_by_lengthtree, error_by_lengthbaseline]
 plot_average_errors_by_length(error_by_length_list)
-print("ok2")

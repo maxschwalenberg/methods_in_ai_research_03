@@ -187,6 +187,6 @@ for dialogact in dialogsacts:
 
 # print(top_words_by_dialog_act)
 
-# Would be useful to show the top words by a dialgo act?
+# Would be useful to show the top words by a dialgo act
 # Example:
 # request': {'the': 483, 'number': 374, 'phone': 371, 'address': 361, 'what': 198}, 'hello': {'hi': 8, 'hello': 6, 'im': 6, 'looking': 6, 'for': 6}
