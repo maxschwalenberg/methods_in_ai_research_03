@@ -293,7 +293,6 @@ table.scale(1.2, 1.2)
 ax.axis('off')
 plt.savefig('output/images/worse_words_models.jpg', bbox_inches='tight', dpi=300)
 
-from collections import defaultdict
 
 def calculate_average_error_by_length(x_test, y_test, preds):
     # Create dictionaries to store predictions and labels by sentence length
@@ -332,22 +331,54 @@ def calculate_average_error_by_length(x_test, y_test, preds):
 
 
 
-def plot_average_errors_by_length(error_by_length):
+def plot_average_errors_by_length(error_by_length_list):
+    # Figure with 3 subplots
+    fig, axs = plt.subplots(1, 3, figsize=(18, 6))
 
-    lengths = list(error_by_length.keys())
-    errors = list(error_by_length.values())
+    # Obtain minimums and maximums values
+    all_lengths = []
+    all_errors = []
+    for error_by_length in error_by_length_list:
+        lengths = list(error_by_length.keys())
+        errors = list(error_by_length.values())
+        all_lengths.extend(lengths)
+        all_errors.extend(errors)
 
-    # Create a scatter plot
-    plt.figure(figsize=(10, 6))
-    plt.scatter(lengths, errors, c='royalblue', marker='o', s=100)
-    plt.xlabel('Sentence Length')
-    plt.ylabel('Average Error')
-    plt.title('Average Error by Sentence Length')
-    plt.xticks(lengths)
-    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    # Using the same scale to notice the differences between models
+    max_length = max(all_lengths)
+    min_length = min(all_lengths)
+    max_error = max(all_errors)
+    min_error = min(all_errors)
 
-    plt.show()
+    for i, error_by_length in enumerate(error_by_length_list):
+        lengths = list(error_by_length.keys())
+        errors = list(error_by_length.values())
 
-error_by_length = calculate_average_error_by_length(logistic_regression.x_test, logistic_regression.y_test, logistic_regression.preds)
-print(error_by_length)
-plot_average_errors_by_length(error_by_length)
+        axs[i].scatter(lengths, errors, c='royalblue', marker='o', s=100)
+        axs[i].set_xlabel('Sentence Length')
+        axs[i].set_ylabel('Average Error')
+        if i == 0:
+            axs[i].set_title(f'Logistic Regression Plot')
+        elif i == 1:
+            axs[i].set_title(f'Decision Tree Plot')
+        else:
+            axs[i].set_title(f'Baseline Plot')
+        axs[i].set_xticks(lengths)
+        axs[i].set_xlim([min_length, max_length])  
+        axs[i].set_ylim([min_error, max_error])   
+        axs[i].grid(axis='y', linestyle='--', alpha=0.7)
+
+    plt.tight_layout()
+    plt.savefig('output/images/utterance_relation.jpg', bbox_inches='tight', dpi=300)
+   
+
+
+
+error_by_lengthlog = calculate_average_error_by_length(logistic_regression.x_test, logistic_regression.y_test, logistic_regression.preds)
+error_by_lengthtree = calculate_average_error_by_length(decision_tree.x_test, decision_tree.y_test, decision_tree.preds)
+error_by_lengthbaseline = calculate_average_error_by_length(rule_based_baseline.x_test, rule_based_baseline.y_test, rule_based_baseline.preds)
+
+print("ok1")
+error_by_length_list = [error_by_lengthlog, error_by_lengthtree, error_by_lengthbaseline]
+plot_average_errors_by_length(error_by_length_list)
+print("ok2")
