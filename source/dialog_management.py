@@ -26,7 +26,6 @@ class DialogManagement:
         file_paths_config: FilePathsConfig,
         debug=False,
     ) -> None:
-
         self.classifier = classifier
 
         self.fetch_keywords(file_paths_config.extended_restaurant_info_path)
@@ -234,7 +233,32 @@ class Info:
             self.delay,
             self.allow_feedback,
             self.allow_preference_change,
+            self.typing_delay,
         ) = configuration
+
+
+import sys
+
+
+def simulate_typing_print(message):
+    for char in message:
+        if char == " ":
+            sleep_time = 0.1
+
+        elif char == "." or char == "!" or char == "?":
+            sleep_time = 0.4
+
+        elif char == ",":
+            sleep_time = 0.2
+
+        else:
+            sleep_time = 0.02
+
+        print(char, end="")
+        sys.stdout.flush()
+        time.sleep(sleep_time)
+
+    print()
 
 
 class State:
@@ -247,8 +271,7 @@ class State:
         self.user_utterance = ""
 
     def give_preferences_feedback(self):
-        """ Return the given preferences to the user so that the user is sure that the system acknowledged their request
-        """
+        """Return the given preferences to the user so that the user is sure that the system acknowledged their request"""
         changed_values = {}
 
         for key in self.info.extracted_preferences:
@@ -307,7 +330,10 @@ class State:
         self.user_utterance = input("User: ")
 
     def print(self, message: str):
-        print(message)
+        if self.info.typing_delay:
+            simulate_typing_print(message)
+        else:
+            print(message)
         if self.info.t2s:
             text_to_speech(message)
 
@@ -434,9 +460,7 @@ class AskPrice(State):
         super().__init__(info)
 
     def dialog(self):
-        message = (
-            f"System: {self.feedback_string}How expensive should the restaurant be?"
-        )
+        message = f"System: {self.feedback_string}How expensive should the restaurant be?"
         self.print(message)
 
         user_utterance = super().dialog()
@@ -596,9 +620,7 @@ class Suggestion(State):
         self.suggestions = None
 
     def dialog(self):
-        self.suggestions = self.restaurant_lookup.lookup(
-            self.info.extracted_preferences
-        )
+        self.suggestions = self.restaurant_lookup.lookup(self.info.extracted_preferences)
         if not self.suggestions.empty:
             random_index = self.previous_suggestion_index
             if len(self.suggestions.values) > 1:

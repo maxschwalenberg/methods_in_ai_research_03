@@ -48,6 +48,7 @@ def load_configuration(configuration_file_path: str) -> list[bool]:
         data["delay"],
         data["allow_feedback"],
         data["allow_preference_change"],
+        data["typing_simulation"],
     ]
 
     return configuration
