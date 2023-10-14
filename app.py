@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 import pymongo
 from pymongo.database import Database
 import pickle
@@ -11,6 +11,7 @@ from source.config import (
 from source.datacreator import Datacreator
 from source.ml_model import DecisionTreeModel
 from source.model import Model
+import json
 
 app = Flask(__name__)
 app.secret_key = "topsecret"
@@ -105,6 +106,10 @@ class DialogManagementWrapper(DialogManagement):
         return new_state
 
 
+parcipant_info_file = "completed_forms_data.json"
+
+
+
 @app.route("/")
 def chatbot():
     decision_tree = load_ml_model("output/data/decision_tree.rf")
@@ -135,7 +140,30 @@ def chatbot():
     return_message = dialog.current_state.dialog(return_message=True)
 
     return_message = return_message.replace("System: ", "")
-    return render_template("chatbot.html", first_message=return_message)
+
+
+    with open(parcipant_info_file) as f:
+        data = json.load(f)
+
+    participant_number = random.randint(0, 999)
+    while participant_number in (data["assigned_numbers"] + data["completed_numbers"]):
+        participant_number = random.randint(0, 999)
+
+    if data["started_with_word_delay"] > data["started_without_word_delay"]:
+        word_delay = False
+    
+    else:
+        word_delay = True
+    
+    with open(parcipant_info_file, "w") as f:
+        data["assigned_numbers"].append(participant_number)
+
+        if len(data["assigned_numbers"]) > 20:
+            data["assigned_numbers"].pop()
+
+        json.dump(data, f)
+
+    return render_template("chatbot.html", first_message=return_message, word_delay=word_delay, participant_number=participant_number)
 
 
 @app.route("/thanks", methods=["GET"])
@@ -287,3 +315,35 @@ def api_return_response():
     print(return_data)
 
     return jsonify(return_data), 200
+
+
+@app.route("/api/forms_completed", methods=["POST"])
+def forms_completed():
+    participant_data = request.get_json()
+
+    with open(parcipant_info_file) as f:
+        data = json.load(f)
+
+    with open(parcipant_info_file, "w") as f:
+        if participant_data["word_delay"]:
+            data["started_with_word_delay"] += 1
+        else:
+            data["started_without_word_delay"] += 1
+
+        try:
+            data["completed_numbers"].append(participant_data["participant_number"])
+        except:
+            pass
+        
+        try:
+            data["assigned_numbers"].remove(participant_data["participant_number"])
+        except:
+            pass
+
+        json.dump(data, f)
+
+        
+    
+
+
+    return "dwadw"
