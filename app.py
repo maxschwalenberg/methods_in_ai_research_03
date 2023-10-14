@@ -30,7 +30,9 @@ def load_ml_model(path):
 
 
 def setup():
-    filenames_config = load_file_paths_configuration("output/data/file_paths_config.json")
+    filenames_config = load_file_paths_configuration(
+        "output/data/file_paths_config.json"
+    )
     configuration = load_configuration(filenames_config.dialog_config_path)
 
     return configuration, filenames_config
@@ -45,6 +47,9 @@ class DialogManagementWrapper(DialogManagement):
         current_state: str,
         extracted_preference: dict,
         extracted_preferences_old: dict,
+        suggestions,
+        previous_suggestion_index,
+        request_utterance,
         debug=False,
     ) -> None:
         super().__init__(classifier, configuration, file_paths_config, debug)
@@ -59,7 +64,22 @@ class DialogManagementWrapper(DialogManagement):
 
         # initialize the welcome state with no known preferences
         state_class = globals()[current_state]
-        instance = state_class(info)
+
+        if current_state == "Contradiction":
+            instance = state_class(info, "explanation string")
+        elif current_state == "GiveDetails":
+            instance = state_class(
+                info,
+                suggestions,
+                previous_suggestion_index,
+                request_utterance,
+            )
+        elif current_state == "Suggestion":
+            instance = state_class(info, previous_suggestion_index=previous_suggestion_index)
+
+        else:
+            instance = state_class(info)
+
         self.current_state = instance
 
     def generate_feedback_string(self):
@@ -75,7 +95,12 @@ class DialogManagementWrapper(DialogManagement):
             time.sleep(random.uniform(0.5, 2))
         # self.dialog()
         classified_response = self.classifier.predict_single_sentence(user_utterance)
+        print(f"{classified_response}\t{user_utterance}")
         self.current_state.user_utterance = user_utterance
+
+        if type(self.current_state).__name__ == "Suggestion":
+            self.current_state.restaurant_lookup.lookup(self.current_state.info.extracted_preferences)
+
         new_state = self.current_state.transition(classified_response)
         return new_state
 
@@ -85,7 +110,16 @@ def chatbot():
     decision_tree = load_ml_model("output/data/decision_tree.rf")
     configuration, filenames_config = setup()
     dialog = DialogManagementWrapper(
-        decision_tree, configuration, filenames_config, "Welcome", {}, {}, debug=False
+        decision_tree,
+        configuration,
+        filenames_config,
+        "Welcome",
+        {},
+        {},
+        None,
+        None,
+        None,
+        debug=False,
     )
 
     session["current_state"] = type(dialog.current_state).__name__
@@ -93,6 +127,9 @@ def chatbot():
     session[
         "extracted_preferences_old"
     ] = dialog.current_state.info.extracted_preferences_old
+    session["suggestions"] = None
+    session["request_utterance"] = None
+    session["previous_suggestion_index"] = None
 
     dialog.generate_feedback_string()
     return_message = dialog.current_state.dialog(return_message=True)
@@ -111,7 +148,16 @@ def restart_dialog():
     decision_tree = load_ml_model("output/data/decision_tree.rf")
     configuration, filenames_config = setup()
     dialog = DialogManagementWrapper(
-        decision_tree, configuration, filenames_config, "Welcome", {}, {}, debug=False
+        decision_tree,
+        configuration,
+        filenames_config,
+        "Welcome",
+        {},
+        {},
+        None,
+        None,
+        None,
+        debug=False,
     )
 
     session["current_state"] = type(dialog.current_state).__name__
@@ -119,15 +165,16 @@ def restart_dialog():
     session[
         "extracted_preferences_old"
     ] = dialog.current_state.info.extracted_preferences_old
+    session["suggestions"] = None
+    session["request_utterance"] = None
+    session["previous_suggestion_index"] = None
 
     dialog.generate_feedback_string()
     return_message = dialog.current_state.dialog(return_message=True)
 
     return_message = return_message.replace("System: ", "")
 
-    
-
-    return jsonify({"response" : return_message})
+    return jsonify({"response": return_message})
 
 
 @app.route("/api/user_input", methods=["POST"])
@@ -148,10 +195,30 @@ def api_return_response():
         current_state,
         extracted_preferences,
         extracted_preferences_old,
+        session["suggestions"],
+        session["previous_suggestion_index"],
+        session["request_utterance"],
         debug=False,
     )
 
+    if current_state != "GiveDetails":
+        session["request_utterance"] = data["utterance"]
+
+
+    if type(current_state).__name__ == "Suggestion":
+        # to execute lookup function
+        print("Fuck")
+        dialog.current_state.restaurant_lookup.lookup(dialog.current_state.info.extracted_preferences)
+
     new_state: State = dialog.transition(data["utterance"])
+    
+
+    try:
+        session["suggestions"] = new_state.suggestions
+        session["previous_suggestion_index"] = new_state.previous_suggestion_index
+    except:
+        pass
+
 
     dialog = DialogManagementWrapper(
         decision_tree,
@@ -160,14 +227,24 @@ def api_return_response():
         type(new_state).__name__,
         new_state.info.extracted_preferences,
         new_state.info.extracted_preferences_old,
+        session["suggestions"],
+        session["previous_suggestion_index"],
+        session["request_utterance"],
         debug=False,
     )
-
+    print(f"State Name: {type(new_state).__name__}")
     try:
         dialog.generate_feedback_string()
         return_message = dialog.current_state.dialog(return_message=True)
     except:
         new_state: State = dialog.transition("")
+
+        try:
+            session["suggestions"] = new_state.suggestions
+            session["previous_suggestion_index"] = new_state.previous_suggestion_index
+        except:
+            pass
+
         print(new_state)
         dialog = DialogManagementWrapper(
             decision_tree,
@@ -176,6 +253,9 @@ def api_return_response():
             type(new_state).__name__,
             new_state.info.extracted_preferences,
             new_state.info.extracted_preferences_old,
+            session["suggestions"],
+            session["previous_suggestion_index"],
+            session["request_utterance"],
             debug=False,
         )
 
@@ -188,7 +268,9 @@ def api_return_response():
         pass
     else:
         session["current_state"] = type(dialog.current_state).__name__
-        session["extracted_preferences"] = dialog.current_state.info.extracted_preferences
+        session[
+            "extracted_preferences"
+        ] = dialog.current_state.info.extracted_preferences
         session[
             "extracted_preferences_old"
         ] = dialog.current_state.info.extracted_preferences_old
@@ -200,7 +282,7 @@ def api_return_response():
         return_data["dialog_finished"] = True
     else:
         return_data["dialog_finished"] = False
-    
+
     return_data["response"] = return_message
     print(return_data)
 

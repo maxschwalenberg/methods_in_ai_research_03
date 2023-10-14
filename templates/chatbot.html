@@ -362,6 +362,9 @@
         current_char = message.charAt(index);
         var timeout;
 
+        chatbox.scrollTo(0, chatbox.scrollHeight);
+
+
         if (current_char == " ") timeout = 50;
         else if (current_char == "." || current_char == "?" || current_char == "!") timeout = 400
         else if (current_char == ",") timeout = 200;
