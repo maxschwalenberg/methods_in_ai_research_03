@@ -101,6 +101,35 @@ def chatbot():
     return render_template("chatbot.html", first_message=return_message)
 
 
+@app.route("/thanks", methods=["GET"])
+def thanks():
+    return render_template("thanks.html")
+
+
+@app.route("/api/restart_dialog", methods=["GET"])
+def restart_dialog():
+    decision_tree = load_ml_model("output/data/decision_tree.rf")
+    configuration, filenames_config = setup()
+    dialog = DialogManagementWrapper(
+        decision_tree, configuration, filenames_config, "Welcome", {}, {}, debug=False
+    )
+
+    session["current_state"] = type(dialog.current_state).__name__
+    session["extracted_preferences"] = dialog.current_state.info.extracted_preferences
+    session[
+        "extracted_preferences_old"
+    ] = dialog.current_state.info.extracted_preferences_old
+
+    dialog.generate_feedback_string()
+    return_message = dialog.current_state.dialog(return_message=True)
+
+    return_message = return_message.replace("System: ", "")
+
+    
+
+    return return_message
+
+
 @app.route("/api/user_input", methods=["POST"])
 def api_return_response():
     data = request.get_json()
@@ -139,6 +168,7 @@ def api_return_response():
         return_message = dialog.current_state.dialog(return_message=True)
     except:
         new_state: State = dialog.transition("")
+        print(new_state)
         dialog = DialogManagementWrapper(
             decision_tree,
             configuration,
@@ -152,6 +182,8 @@ def api_return_response():
         dialog.generate_feedback_string()
         return_message = dialog.current_state.dialog(return_message=True)
 
+    print(new_state)
+    print(return_message)
     if new_state is None:
         pass
     else:
@@ -162,4 +194,14 @@ def api_return_response():
         ] = dialog.current_state.info.extracted_preferences_old
 
     return_message = return_message.replace("System: ", "")
-    return jsonify({"response": return_message}), 200
+
+    return_data = {}
+    if session["current_state"] == "Goodbye":
+        return_data["dialog_finished"] = True
+    else:
+        return_data["dialog_finished"] = False
+    
+    return_data["response"] = return_message
+    print(return_data)
+
+    return jsonify(return_data), 200

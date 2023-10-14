@@ -779,12 +779,16 @@ class Contradiction(State):
         super().__init__(info)
         self.explanation_string = explanation_string
 
-    def dialog(self):
+    def dialog(self, return_message=False):
         message = (
             "System: "
             + self.explanation_string
             + " The additional requirement was removed."
         )
+
+        if return_message:
+            return message
+
         self.print(message)
         user_utterance = "temporary string"
 
@@ -798,8 +802,11 @@ class Goodbye(State):
     def __init__(self, info: Info) -> None:
         super().__init__(info)
 
-    def dialog(self):
+    def dialog(self, return_message=False):
         message = "System: Goodbye, have a nice day!"
+
+        if return_message:
+            return message
 
         self.print(message)
 
