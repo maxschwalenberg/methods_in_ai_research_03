@@ -1,0 +1,68 @@
+{
+    "romantic": [
+        {
+            "conditions": [
+                {
+                    "category": "crowdedness",
+                    "value": "busy"
+                }
+            ],
+            "consequence": false
+        },
+        {
+            "conditions": [
+                {
+                    "category": "stay_length",
+                    "value": "long"
+                }
+            ],
+            "consequence": true
+        }
+    ],
+    "touristic": [
+        {
+            "conditions": [
+                {
+                    "category": "food",
+                    "value": "romanian"
+                }
+            ],
+            "consequence": false
+        },
+        {
+            "conditions": [
+                {
+                    "category": "pricerange",
+                    "value": "cheap"
+                },
+                {
+                    "category": "food_quality",
+                    "value": "good"
+                }
+            ],
+            "consequence": true
+        }
+    ],
+    "children": [
+        {
+            "conditions": [
+                {
+                    "category": "stay_length",
+                    "value": "long"
+                }
+            ],
+            "consequence": false
+        }
+    ],
+    "assigned seats": [
+        {
+            "conditions": [
+                {
+                    "category": "crowdedness",
+                    "value": "busy"
+                }
+            ],
+            "consequence": true
+        }
+    ]
+}
