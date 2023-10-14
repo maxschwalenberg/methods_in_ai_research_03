@@ -309,7 +309,33 @@
     let userMessage = null; // Variable to store user's message
     const inputInitHeight = chatInput.scrollHeight;
 
-    function restartDialog(){
+    async function restartDialog(){
+        document.querySelector("textarea").disabled = false;
+
+
+        var child = chatbox.lastElementChild;  
+        while (child) { 
+            chatbox.removeChild(child); 
+            child = chatbox.lastElementChild; 
+        } 
+        chatbox.scrollTo(0, chatbox.scrollHeight);
+
+        const response = await fetch("{{ url_for('restart_dialog') }}", {
+            method: 'GET',
+        });
+        data = await response.json();
+        
+        await setTimeout(() => {
+            const incomingChatLi = createChatLi("Thinking...", "incoming");
+            chatbox.appendChild(incomingChatLi);
+            chatbox.scrollTo(0, chatbox.scrollHeight);
+
+            const messageElement = incomingChatLi.querySelector("p");
+            messageElement.innerHTML = "";
+
+            typeWriter(messageElement, data["response"]);
+        }, 600);
+
 
     }
 
@@ -317,9 +343,12 @@
     function dialogFinished(){
         const buttonWrapper = document.createElement("div");
         const restartButton = document.createElement("button");
+        restartButton.onclick = restartDialog;
+        
         restartButton.classList.add("restartButton");
         buttonWrapper.classList.add("restartButtonWrapper");
 
+        document.querySelector("textarea").disabled = true;
 
         restartButton.innerHTML = "Restart";
         buttonWrapper.appendChild(restartButton);

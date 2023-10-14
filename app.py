@@ -127,7 +127,7 @@ def restart_dialog():
 
     
 
-    return return_message
+    return jsonify({"response" : return_message})
 
 
 @app.route("/api/user_input", methods=["POST"])
