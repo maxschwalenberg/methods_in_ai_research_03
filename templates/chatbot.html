@@ -1,228 +1,372 @@
 <!DOCTYPE html>
-<html lang="en">
+<!-- Coding By CodingNepal - www.codingnepalweb.com -->
+<html lang="en" dir="ltr">
 
 <head>
+    <meta charset="utf-8">
+    <title>Restaurant Recommender</title>
+
     <style>
+        /* Import Google font - Poppins */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
         body {
-            font: 15px arial, sans-serif;
-            background-color: #d9d9d9;
-            padding-top: 15px;
-            padding-bottom: 15px;
+            background: #E3F2FD;
         }
 
-        #bodybox {
-            margin: auto;
-            max-width: 550px;
-            font: 15px arial, sans-serif;
-            background-color: white;
-            border-style: solid;
-            border-width: 1px;
-            padding-top: 20px;
-            padding-bottom: 25px;
-            padding-right: 25px;
-            padding-left: 25px;
-            box-shadow: 5px 5px 5px grey;
+        .chatbot-toggler {
+            position: fixed;
+            bottom: 30px;
+            right: 35px;
+            outline: none;
+            border: none;
+            height: 50px;
+            width: 50px;
+            display: flex;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: #724ae8;
+            transition: all 0.2s ease;
+        }
+
+        body.show-chatbot .chatbot-toggler {
+            transform: rotate(90deg);
+        }
+
+        .chatbot-toggler span {
+            color: #fff;
+            position: absolute;
+        }
+
+        .chatbot-toggler span:last-child,
+        body.show-chatbot .chatbot-toggler span:first-child {
+            opacity: 0;
+        }
+
+        body.show-chatbot .chatbot-toggler span:last-child {
+            opacity: 1;
+        }
+
+        .chatbot {
+            position: fixed;
+            right: 35px;
+            bottom: 90px;
+            width: 420px;
+            background: #fff;
             border-radius: 15px;
+            overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.5);
+            transform-origin: bottom right;
+            box-shadow: 0 0 128px 0 rgba(0, 0, 0, 0.1),
+                0 32px 64px -48px rgba(0, 0, 0, 0.5);
+            transition: all 0.1s ease;
         }
 
-        #chatborder {
-            border-style: solid;
-            background-color: #f6f9f6;
-            border-width: 3px;
-            margin-top: 20px;
-            margin-bottom: 20px;
-            margin-left: 20px;
-            margin-right: 20px;
-            padding-top: 10px;
-            padding-bottom: 15px;
-            padding-right: 20px;
-            padding-left: 15px;
-            border-radius: 15px;
+        body.show-chatbot .chatbot {
+            opacity: 1;
+            pointer-events: auto;
+            transform: scale(1);
         }
 
-        .chatlog {
-            font: 15px arial, sans-serif;
+        .chatbot header {
+            padding: 16px 0;
+            position: relative;
+            text-align: center;
+            color: #fff;
+            background: #724ae8;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        #chatbox {
-            font: 17px arial, sans-serif;
-            height: 22px;
+        .chatbot header span {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            display: none;
+            cursor: pointer;
+            transform: translateY(-50%);
+        }
+
+        header h2 {
+            font-size: 1.4rem;
+        }
+
+        .chatbot .chatbox {
+            overflow-y: auto;
+            height: 510px;
+            padding: 30px 20px 100px;
+        }
+
+        .chatbot :where(.chatbox, textarea)::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chatbot :where(.chatbox, textarea)::-webkit-scrollbar-track {
+            background: #fff;
+            border-radius: 25px;
+        }
+
+        .chatbot :where(.chatbox, textarea)::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 25px;
+        }
+
+        .chatbox .chat {
+            display: flex;
+            list-style: none;
+        }
+
+        .chatbox .outgoing {
+            margin: 20px 0;
+            justify-content: flex-end;
+        }
+
+        .chatbox .incoming span {
+            width: 32px;
+            height: 32px;
+            color: #fff;
+            cursor: default;
+            text-align: center;
+            line-height: 32px;
+            align-self: flex-end;
+            background: #724ae8;
+            border-radius: 4px;
+            margin: 0 10px 7px 0;
+        }
+
+        .chatbox .chat p {
+            white-space: pre-wrap;
+            padding: 12px 16px;
+            border-radius: 10px 10px 0 10px;
+            max-width: 75%;
+            color: #fff;
+            font-size: 0.95rem;
+            background: #724ae8;
+        }
+
+        .chatbox .incoming p {
+            border-radius: 10px 10px 10px 0;
+        }
+
+        .chatbox .chat p.error {
+            color: #721c24;
+            background: #f8d7da;
+        }
+
+        .chatbox .incoming p {
+            color: #000;
+            background: #f2f2f2;
+        }
+
+        .chatbot .chat-input {
+            display: flex;
+            gap: 5px;
+            position: absolute;
+            bottom: 0;
             width: 100%;
+            background: #fff;
+            padding: 3px 20px;
+            border-top: 1px solid #ddd;
         }
 
-        h1 {
-            margin: auto;
+        .chat-input textarea {
+            height: 55px;
+            width: 100%;
+            border: none;
+            outline: none;
+            resize: none;
+            max-height: 180px;
+            padding: 15px 15px 15px 0;
+            font-size: 0.95rem;
         }
 
-        pre {
-            background-color: #f0f0f0;
-            margin-left: 20px;
+        .chat-input span {
+            align-self: flex-end;
+            color: #724ae8;
+            cursor: pointer;
+            height: 55px;
+            display: flex;
+            align-items: center;
+            visibility: hidden;
+            font-size: 1.35rem;
+        }
+
+        .chat-input textarea:valid~span {
+            visibility: visible;
+        }
+
+        @media (max-width: 490px) {
+            .chatbot-toggler {
+                right: 20px;
+                bottom: 20px;
+            }
+
+            .chatbot {
+                right: 0;
+                bottom: 0;
+                height: 100%;
+                border-radius: 0;
+                width: 100%;
+            }
+
+            .chatbot .chatbox {
+                height: 90%;
+                padding: 25px 15px 100px;
+            }
+
+            .chatbot .chat-input {
+                padding: 5px 15px;
+            }
+
+            .chatbot header span {
+                display: block;
+            }
         }
     </style>
 
-
-    <title>International telephone input</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="styles.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Google Fonts Link For Icons -->
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@48,400,1,0" />
 </head>
 
 <body>
-
-    <div id='bodybox'>
-        <div id='chatborder'>
-            <p id="chatlog7" class="chatlog">&nbsp;</p>
-            <p id="chatlog6" class="chatlog">&nbsp;</p>
-            <p id="chatlog5" class="chatlog">&nbsp;</p>
-            <p id="chatlog4" class="chatlog">&nbsp;</p>
-            <p id="chatlog3" class="chatlog">&nbsp;</p>
-            <p id="chatlog2" class="chatlog">&nbsp;</p>
-            <p id="chatlog1" class="chatlog">&nbsp;</p>
-            <input type="text" name="chat" id="chatbox" placeholder="Hi there! Type here to talk to me."
-                onfocus="placeHolder()">
+    <button class="chatbot-toggler">
+        <span class="material-symbols-rounded">mode_comment</span>
+        <span class="material-symbols-outlined">close</span>
+    </button>
+    <div class="chatbot">
+        <header>
+            <h2>Restaurant Finder</h2>
+            <span class="close-btn material-symbols-outlined">close</span>
+        </header>
+        <ul class="chatbox">
+            <li class="chat incoming">
+                <span class="material-symbols-outlined">smart_toy</span>
+                <p>{{first_message}}</p>
+            </li>
+        </ul>
+        <div class="chat-input">
+            <textarea placeholder="Enter a message..." spellcheck="false" required></textarea>
+            <span id="send-btn" class="material-symbols-rounded">send</span>
         </div>
-
     </div>
+
 </body>
 
 <script>
-    //links
-    //http://eloquentjavascript.net/09_regexp.html
-    //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions
+    const chatbotToggler = document.querySelector(".chatbot-toggler");
+    const closeBtn = document.querySelector(".close-btn");
+    const chatbox = document.querySelector(".chatbox");
+    const chatInput = document.querySelector(".chat-input textarea");
+    const sendChatBtn = document.querySelector(".chat-input span");
+    let index = 0;
+    let userMessage = null; // Variable to store user's message
+    const inputInitHeight = chatInput.scrollHeight;
+
+    function typeWriter(element, message) {
+        current_char = message.charAt(index);
+        var timeout;
+
+        if (current_char == " ") timeout = 50;
+        else if (current_char == "." || current_char == "?" || current_char == "!") timeout = 400
+        else if (current_char == ",") timeout = 200;
+        else timeout = 25;
+
+        setTimeout(() => {
+            element.textContent += current_char;
+            index++;
+            if (index < message.length) typeWriter(element, message);
+
+        }, timeout)
 
 
-    var messages = [], //array that hold the record of each string in chat
-        lastUserMessage = "", //keeps track of the most recent input string from the user
-        botMessage = "", //var keeps track of what the chatbot is going to say
-        botName = 'Chatbot', //name of the chatbot
-        talking = true; //when false the speach function doesn't work
-    //
-    //
-    //****************************************************************
-    //****************************************************************
-    //****************************************************************
-    //****************************************************************
-    //****************************************************************
-    //****************************************************************
-    //****************************************************************
-    //edit this function to change what the chatbot says
-    async function chatbotResponse(utterance) {
-        talking = true;
+    }
 
+    const createChatLi = (message, className) => {
+        // Create a chat <li> element with passed message and className
+        const chatLi = document.createElement("li");
+        chatLi.classList.add("chat", `${className}`);
+        let chatContent = className === "outgoing" ? `<p></p>` : `<span class="material-symbols-outlined">smart_toy</span><p></p>`;
+        chatLi.innerHTML = chatContent;
+        chatLi.querySelector("p").textContent = message;
+        return chatLi; // return chat <li> element
+    }
 
-        const response = await fetch("{{ url_for('api_return_response') }}", {
+    const generateResponse = (chatElement) => {
+        const messageElement = chatElement.querySelector("p");
+        index = 0;
+        fetch("{{ url_for('api_return_response') }}", {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                "utterance": utterance,
+                "utterance": userMessage,
             }),
-        });
-
-        var temp_return;
-        response.json().then(data => {
-            console.log(JSON.stringify(data));
-            botMessage = data["response"];
-            console.log(botMessage);
-
-            return botMessage;
-        });
-
-        console.log(botMessage);
-
-        botMessage = "I'm confused"; // the default message
-
-        if (lastUserMessage === 'hi' || lastUserMessage == 'hello') {
-            const hi = ['hi', 'howdy', 'hello']
-            botMessage = hi[Math.floor(Math.random() * (hi.length))];;
-        }
-
-        if (lastUserMessage === 'name') {
-            botMessage = 'My name is ' + botName;
-        }
-
+        }).then(res => res.json()).then(data => {
+            messageElement.textContent = "";
+            typeWriter(messageElement, data["response"]);
+            // messageElement.textContent = data["response"];
+        }).catch(() => {
+            messageElement.classList.add("error");
+            messageElement.textContent = "Oops! Something went wrong. Please try again.";
+        }).finally(() => chatbox.scrollTo(0, chatbox.scrollHeight));
 
     }
-    //****************************************************************
-    //****************************************************************
-    //****************************************************************
-    //****************************************************************
-    //****************************************************************
-    //****************************************************************
-    //****************************************************************
-    //
-    //
-    //
-    //this runs each time enter is pressed.
-    //It controls the overall input and output
-    async function newEntry() {
-        //if the message from the user isn't empty then run 
-        if (document.getElementById("chatbox").value != "") {
-            //pulls the value from the chatbox ands sets it to lastUserMessage
-            lastUserMessage = document.getElementById("chatbox").value;
-            //sets the chat box to be clear
-            document.getElementById("chatbox").value = "";
-            //adds the value of the chatbox to the array messages
-            messages.push(lastUserMessage);
-            //Speech(lastUserMessage);  //says what the user typed outloud
-            //sets the variable botMessage in response to lastUserMessage
-            var response = await chatbotResponse(lastUserMessage);
-            //add the chatbot's name and message to the array messages
-            messages.push("<b>" + botName + ":</b> " + response);
-            // says the message using the text to speech function written below
-            Speech(botMessage);
-            //outputs the last few array elements of messages to html
-            for (var i = 1; i < 8; i++) {
-                if (messages[messages.length - i])
-                    document.getElementById("chatlog" + i).innerHTML = messages[messages.length - i];
-            }
-        }
+
+    const handleChat = () => {
+        userMessage = chatInput.value.trim(); // Get user entered message and remove extra whitespace
+        if (!userMessage) return;
+
+        // Clear the input textarea and set its height to default
+        chatInput.value = "";
+        chatInput.style.height = `${inputInitHeight}px`;
+
+        // Append the user's message to the chatbox
+        chatbox.appendChild(createChatLi(userMessage, "outgoing"));
+        chatbox.scrollTo(0, chatbox.scrollHeight);
+
+        setTimeout(() => {
+            // Display "Thinking..." message while waiting for the response
+            const incomingChatLi = createChatLi("Thinking...", "incoming");
+            chatbox.appendChild(incomingChatLi);
+            chatbox.scrollTo(0, chatbox.scrollHeight);
+            generateResponse(incomingChatLi);
+        }, 600);
     }
 
-    //text to Speech
-    //https://developers.google.com/web/updates/2014/01/Web-apps-that-talk-Introduction-to-the-Speech-Synthesis-API
-    function Speech(say) {
-        if ('speechSynthesis' in window && talking) {
-            //say = "hello i am alex, como estas"
-            var utterance = new SpeechSynthesisUtterance(say);
-            //msg.voice = voices[10]; // Note: some voices don't support altering params
-            //msg.voiceURI = 'native';
-            //utterance.volume = 1; // 0 to 1
-            //utterance.rate = 0.1; // 0.1 to 10
-            //utterance.pitch = 1; //0 to 2
-            //utterance.text = 'Hello World';
-            //utterance.lang = 'en-US';
-            speechSynthesis.speak(utterance);
-        }
-    }
+    chatInput.addEventListener("input", () => {
+        // Adjust the height of the input textarea based on its content
+        chatInput.style.height = `${inputInitHeight}px`;
+        chatInput.style.height = `${chatInput.scrollHeight}px`;
+    });
 
-    //runs the keypress() function when a key is pressed
-    document.onkeypress = keyPress;
-    //if the key pressed is 'enter' runs the function newEntry()
-    function keyPress(e) {
-        var x = e || window.event;
-        var key = (x.keyCode || x.which);
-        if (key == 13 || key == 3) {
-            //runs this function when enter is pressed
-            newEntry();
+    chatInput.addEventListener("keydown", (e) => {
+        // If Enter key is pressed without Shift key and the window 
+        // width is greater than 800px, handle the chat
+        if (e.key === "Enter" && !e.shiftKey && window.innerWidth > 800) {
+            e.preventDefault();
+            handleChat();
         }
-        if (key == 38) {
-            console.log('hi')
-            //document.getElementById("chatbox").value = lastUserMessage;
-        }
-    }
+    });
 
-    //clears the placeholder text ion the chatbox
-    //this function is set to run when the users brings focus to the chatbox, by clicking on it
-    function placeHolder() {
-        document.getElementById("chatbox").placeholder = "";
-    }
-
+    sendChatBtn.addEventListener("click", handleChat);
+    closeBtn.addEventListener("click", () => document.body.classList.remove("show-chatbot"));
+    chatbotToggler.addEventListener("click", () => document.body.classList.toggle("show-chatbot"));
 </script>
-
-
 
 </html>

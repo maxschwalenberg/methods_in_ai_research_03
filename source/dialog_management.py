@@ -345,8 +345,11 @@ class Welcome(State):
     def __init__(self, info: Info) -> None:
         super().__init__(info)
 
-    def dialog(self):
+    def dialog(self, return_message=False):
         message = f"System: {self.feedback_string}Hello, welcome to the restaurant recommender system. You can ask for restaurants by area/price range/food type. How may I help you?"
+        if return_message:
+            return message
+
         self.print(message)
         user_utterance = super().dialog()
 
@@ -396,8 +399,10 @@ class AskArea(State):
     def __init__(self, info: Info) -> None:
         super().__init__(info)
 
-    def dialog(self):
+    def dialog(self, return_message=False):
         message = f"System: {self.feedback_string}Which area do you want to go?"
+        if return_message:
+            return message
         self.print(message)
 
         user_utterance = super().dialog()
@@ -459,8 +464,11 @@ class AskPrice(State):
     def __init__(self, info: Info) -> None:
         super().__init__(info)
 
-    def dialog(self):
+    def dialog(self, return_message=False):
         message = f"System: {self.feedback_string}How expensive should the restaurant be?"
+        if return_message:
+            return message
+
         self.print(message)
 
         user_utterance = super().dialog()
@@ -509,8 +517,10 @@ class AskType(State):
     def __init__(self, info: Info) -> None:
         super().__init__(info)
 
-    def dialog(self):
+    def dialog(self, return_message=False):
         message = f"System: {self.feedback_string}What type of food would you like?"
+        if return_message:
+            return message
         self.print(message)
 
         user_utterance = super().dialog()
@@ -560,8 +570,10 @@ class AskForAdditionalInformation(State):
         super().__init__(info)
         self.restaurant_lookup = RestaurantLookup(info.file_paths_config)
 
-    def dialog(self):
+    def dialog(self, return_message=False):
         message = f"System: {self.feedback_string}Do you have additional requirements?"
+        if return_message:
+            return message
         self.print(message)
         user_utterance = super().dialog()
 
@@ -619,7 +631,7 @@ class Suggestion(State):
         self.previous_suggestion_index = previous_suggestion_index
         self.suggestions = None
 
-    def dialog(self):
+    def dialog(self, return_message=False):
         self.suggestions = self.restaurant_lookup.lookup(self.info.extracted_preferences)
         if not self.suggestions.empty:
             random_index = self.previous_suggestion_index
@@ -633,11 +645,14 @@ class Suggestion(State):
             message = f"System: {self.feedback_string}The best restaurant according to your preferences is: {self.suggestions.values[random_index][0]}."
             if "additional_requirement" in self.info.extracted_preferences:
                 message += f" {self.restaurant_lookup.explain_inference(self.suggestions.iloc[random_index], self.info.extracted_preferences['additional_requirement'])}"
-
+            if return_message:
+                return message
             self.print(message)
 
         else:
             message = "System: No restaurants found."
+            if return_message:
+                return message
             self.print(message)
         user_utterance = super().dialog()
 
@@ -698,7 +713,7 @@ class GiveDetails(State):
         self.suggestions = suggestions
         self.request_utterance = request_utterance
 
-    def dialog(self):
+    def dialog(self, return_message=False):
         request_type = pattern_match_request(self.request_utterance)
         # Give the according information with the request type
         if request_type == "phone":
@@ -712,6 +727,8 @@ class GiveDetails(State):
 
         else:
             message = "Sorry I can't understand this request"
+        if return_message:
+            return message
 
         self.print(message)
 
