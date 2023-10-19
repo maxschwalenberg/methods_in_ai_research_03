@@ -1,810 +1,826 @@
 <!DOCTYPE html>
 <!-- Coding By CodingNepal - www.codingnepalweb.com -->
 <html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8" />
-    <title>Restaurant Recommender</title>
 
-    <style>
-      /* Import Google font - Poppins */
-      @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
+<head>
+  <meta charset="utf-8" />
+  <title>Restaurant Recommender</title>
 
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: "Poppins", sans-serif;
-      }
+  <style>
+    /* Import Google font - Poppins */
+    @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
 
-      body {
-        background: #e3f2fd;
-      }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
 
+    body {
+      background: #e3f2fd;
+    }
+
+    .chatbot-toggler {
+      position: fixed;
+      bottom: 30px;
+      right: 35px;
+      outline: none;
+      border: none;
+      height: 50px;
+      width: 50px;
+      display: flex;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: #724ae8;
+      transition: all 0.2s ease;
+    }
+
+    body.show-chatbot .chatbot-toggler {
+      transform: rotate(90deg);
+    }
+
+    .chatbot-toggler span {
+      color: #fff;
+      position: absolute;
+    }
+
+    .chatbot-toggler span:last-child,
+    body.show-chatbot .chatbot-toggler span:first-child {
+      opacity: 0;
+    }
+
+    body.show-chatbot .chatbot-toggler span:last-child {
+      opacity: 1;
+    }
+
+    .chatbot {
+      position: fixed;
+      right: 35px;
+      bottom: 90px;
+      width: 420px;
+      background: #fff;
+      border-radius: 15px;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.5);
+      transform-origin: bottom right;
+      box-shadow: 0 0 128px 0 rgba(0, 0, 0, 0.1),
+        0 32px 64px -48px rgba(0, 0, 0, 0.5);
+      transition: all 0.1s ease;
+    }
+
+    body.show-chatbot .chatbot {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1);
+    }
+
+    .chatbot header {
+      padding: 16px 0;
+      position: relative;
+      text-align: center;
+      color: #fff;
+      background: #724ae8;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .chatbot header span {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      display: none;
+      cursor: pointer;
+      transform: translateY(-50%);
+    }
+
+    header h2 {
+      font-size: 1.4rem;
+    }
+
+    .chatbot .chatbox {
+      overflow-y: auto;
+      height: 510px;
+      padding: 30px 20px 100px;
+    }
+
+    .chatbot :where(.chatbox, textarea)::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .chatbot :where(.chatbox, textarea)::-webkit-scrollbar-track {
+      background: #fff;
+      border-radius: 25px;
+    }
+
+    .chatbot :where(.chatbox, textarea)::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 25px;
+    }
+
+    .chatbox .chat {
+      display: flex;
+      list-style: none;
+    }
+
+    .chatbox .outgoing {
+      margin: 20px 0;
+      justify-content: flex-end;
+    }
+
+    .chatbox .incoming span {
+      width: 32px;
+      height: 32px;
+      color: #fff;
+      cursor: default;
+      text-align: center;
+      line-height: 32px;
+      align-self: flex-end;
+      background: #724ae8;
+      border-radius: 4px;
+      margin: 0 10px 7px 0;
+    }
+
+    .chatbox .chat p {
+      white-space: pre-wrap;
+      padding: 12px 16px;
+      border-radius: 10px 10px 0 10px;
+      max-width: 75%;
+      color: #fff;
+      font-size: 0.95rem;
+      background: #724ae8;
+    }
+
+    .chatbox .incoming p {
+      border-radius: 10px 10px 10px 0;
+    }
+
+    .chatbox .chat p.error {
+      color: #721c24;
+      background: #f8d7da;
+    }
+
+    .chatbox .incoming p {
+      color: #000;
+      background: #f2f2f2;
+    }
+
+    .chatbot .chat-input {
+      display: flex;
+      gap: 5px;
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      background: #fff;
+      padding: 3px 20px;
+      border-top: 1px solid #ddd;
+    }
+
+    .chat-input textarea {
+      height: 55px;
+      width: 100%;
+      border: none;
+      outline: none;
+      resize: none;
+      max-height: 180px;
+      padding: 15px 15px 15px 0;
+      font-size: 0.95rem;
+    }
+
+    .chat-input span {
+      align-self: flex-end;
+      color: #724ae8;
+      cursor: pointer;
+      height: 55px;
+      display: flex;
+      align-items: center;
+      visibility: hidden;
+      font-size: 1.35rem;
+    }
+
+    .chat-input textarea:valid~span {
+      visibility: visible;
+    }
+
+    .consent {
+      margin: auto;
+      text-align: center;
+      display: block;
+      position: relative;
+      max-width: 50%;
+      background: #fff;
+      border-radius: 8px;
+      padding: 15px 25px 22px;
+    }
+
+    .consent-data {
+      text-align: left;
+      background: #fff;
+    }
+
+    .demographic {
+      margin: auto;
+      text-align: center;
+      display: block;
+      position: relative;
+      max-width: 50%;
+      background: #fff;
+      border-radius: 8px;
+      padding: 15px 25px 22px;
+    }
+
+    .demographic-data {
+      text-align: left;
+      background: #fff;
+    }
+
+
+    @media (max-width: 490px) {
       .chatbot-toggler {
-        position: fixed;
-        bottom: 30px;
-        right: 35px;
-        outline: none;
-        border: none;
-        height: 50px;
-        width: 50px;
-        display: flex;
-        cursor: pointer;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        background: #724ae8;
-        transition: all 0.2s ease;
-      }
-
-      body.show-chatbot .chatbot-toggler {
-        transform: rotate(90deg);
-      }
-
-      .chatbot-toggler span {
-        color: #fff;
-        position: absolute;
-      }
-
-      .chatbot-toggler span:last-child,
-      body.show-chatbot .chatbot-toggler span:first-child {
-        opacity: 0;
-      }
-
-      body.show-chatbot .chatbot-toggler span:last-child {
-        opacity: 1;
+        right: 20px;
+        bottom: 20px;
       }
 
       .chatbot {
-        position: fixed;
-        right: 35px;
-        bottom: 90px;
-        width: 420px;
-        background: #fff;
-        border-radius: 15px;
-        overflow: hidden;
-        opacity: 0;
-        pointer-events: none;
-        transform: scale(0.5);
-        transform-origin: bottom right;
-        box-shadow: 0 0 128px 0 rgba(0, 0, 0, 0.1),
-          0 32px 64px -48px rgba(0, 0, 0, 0.5);
-        transition: all 0.1s ease;
-      }
-
-      body.show-chatbot .chatbot {
-        opacity: 1;
-        pointer-events: auto;
-        transform: scale(1);
-      }
-
-      .chatbot header {
-        padding: 16px 0;
-        position: relative;
-        text-align: center;
-        color: #fff;
-        background: #724ae8;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      }
-
-      .chatbot header span {
-        position: absolute;
-        right: 15px;
-        top: 50%;
-        display: none;
-        cursor: pointer;
-        transform: translateY(-50%);
-      }
-
-      header h2 {
-        font-size: 1.4rem;
+        right: 0;
+        bottom: 0;
+        height: 100%;
+        border-radius: 0;
+        width: 100%;
       }
 
       .chatbot .chatbox {
-        overflow-y: auto;
-        height: 510px;
-        padding: 30px 20px 100px;
-      }
-
-      .chatbot :where(.chatbox, textarea)::-webkit-scrollbar {
-        width: 6px;
-      }
-
-      .chatbot :where(.chatbox, textarea)::-webkit-scrollbar-track {
-        background: #fff;
-        border-radius: 25px;
-      }
-
-      .chatbot :where(.chatbox, textarea)::-webkit-scrollbar-thumb {
-        background: #ccc;
-        border-radius: 25px;
-      }
-
-      .chatbox .chat {
-        display: flex;
-        list-style: none;
-      }
-
-      .chatbox .outgoing {
-        margin: 20px 0;
-        justify-content: flex-end;
-      }
-
-      .chatbox .incoming span {
-        width: 32px;
-        height: 32px;
-        color: #fff;
-        cursor: default;
-        text-align: center;
-        line-height: 32px;
-        align-self: flex-end;
-        background: #724ae8;
-        border-radius: 4px;
-        margin: 0 10px 7px 0;
-      }
-
-      .chatbox .chat p {
-        white-space: pre-wrap;
-        padding: 12px 16px;
-        border-radius: 10px 10px 0 10px;
-        max-width: 75%;
-        color: #fff;
-        font-size: 0.95rem;
-        background: #724ae8;
-      }
-
-      .chatbox .incoming p {
-        border-radius: 10px 10px 10px 0;
-      }
-
-      .chatbox .chat p.error {
-        color: #721c24;
-        background: #f8d7da;
-      }
-
-      .chatbox .incoming p {
-        color: #000;
-        background: #f2f2f2;
+        height: 90%;
+        padding: 25px 15px 100px;
       }
 
       .chatbot .chat-input {
-        display: flex;
-        gap: 5px;
-        position: absolute;
-        bottom: 0;
-        width: 100%;
-        background: #fff;
-        padding: 3px 20px;
-        border-top: 1px solid #ddd;
+        padding: 5px 15px;
       }
 
-      .chat-input textarea {
-        height: 55px;
-        width: 100%;
-        border: none;
-        outline: none;
-        resize: none;
-        max-height: 180px;
-        padding: 15px 15px 15px 0;
-        font-size: 0.95rem;
+      .chatbot header span {
+        display: block;
       }
 
-      .chat-input span {
-        align-self: flex-end;
-        color: #724ae8;
-        cursor: pointer;
-        height: 55px;
-        display: flex;
-        align-items: center;
-        visibility: hidden;
-        font-size: 1.35rem;
-      }
-
-      .chat-input textarea:valid ~ span {
-        visibility: visible;
-      }
-
-      @media (max-width: 490px) {
-        .chatbot-toggler {
-          right: 20px;
-          bottom: 20px;
-        }
-
-        .chatbot {
-          right: 0;
-          bottom: 0;
-          height: 100%;
-          border-radius: 0;
-          width: 100%;
-        }
-
-        .chatbot .chatbox {
-          height: 90%;
-          padding: 25px 15px 100px;
-        }
-
-        .chatbot .chat-input {
-          padding: 5px 15px;
-        }
-
-        .chatbot header span {
-          display: block;
-        }
-
-        }
-
-        .consent {
-                margin: auto;
-                text-align: center;
-                display: block;
-                position: relative;
-                max-width: 50%;
-                background: #fff;
-                border-radius: 8px;
-                padding: 15px 25px 22px;
-            }
-        
-        .consent-data {
-            text-align: left;
-            background: #fff;
+      .consent {
+        max-width: 90%;
       }
 
       .demographic {
-                margin: auto;
-                text-align: center;
-                display: block;
-                position: relative;
-                max-width: 50%;
-                background: #fff;
-                border-radius: 8px;
-                padding: 15px 25px 22px;
-            }
-        
-        .demographic-data {
-            text-align: left;
-            background: #fff;
+        max-width: 90%;
       }
 
-      .restartButtonWrapper {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        margin-top: 10px;
+    }
+
+    
+
+    .restartButtonWrapper {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    .restartButton {
+      background-color: rgba(51, 51, 51, 0.05);
+      border-radius: 8px;
+      border-width: 0;
+      color: #333333;
+      cursor: pointer;
+      display: inline-block;
+      font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial,
+        sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 20px;
+      list-style: none;
+      margin: 0;
+      padding: 10px 12px;
+      text-align: center;
+      transition: all 200ms;
+      vertical-align: baseline;
+      white-space: nowrap;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    .participant-number {
+      margin: auto;
+      padding: 10px 20px;
+      max-width: 800px;
+    }
+
+    /* Modal Header */
+    .modal-header {
+      padding: 2px 16px;
+      background-color: #5cb85c;
+      color: white;
+    }
+
+    /* Modal Body */
+    .modal-body {
+      padding: 2px 16px;
+    }
+
+    /* Modal Footer */
+    .modal-footer {
+      padding: 2px 16px;
+      background-color: #5cb85c;
+      color: white;
+    }
+
+    /* Modal Content */
+    .modal-content {
+      position: relative;
+      background-color: #fefefe;
+      margin: auto;
+      padding: 0;
+      border: 1px solid #888;
+      width: 80%;
+      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2),
+        0 6px 20px 0 rgba(0, 0, 0, 0.19);
+      animation-name: animatetop;
+      animation-duration: 0.4s;
+    }
+
+    /* Add Animation */
+    @keyframes animatetop {
+      from {
+        top: -300px;
+        opacity: 0;
       }
 
-      .restartButton {
-        background-color: rgba(51, 51, 51, 0.05);
-        border-radius: 8px;
-        border-width: 0;
-        color: #333333;
-        cursor: pointer;
-        display: inline-block;
-        font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial,
-          sans-serif;
-        font-size: 14px;
-        font-weight: 500;
-        line-height: 20px;
-        list-style: none;
-        margin: 0;
-        padding: 10px 12px;
-        text-align: center;
-        transition: all 200ms;
-        vertical-align: baseline;
-        white-space: nowrap;
-        user-select: none;
-        -webkit-user-select: none;
-        touch-action: manipulation;
-      }
-
-      .participant-number {
-        margin: 0;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        -ms-transform: translate(-50%, -50%);
-        transform: translate(-50%, -50%);
-        max-width: 800px;
-      }
-
-      /* Modal Header */
-      .modal-header {
-        padding: 2px 16px;
-        background-color: #5cb85c;
-        color: white;
-      }
-
-      /* Modal Body */
-      .modal-body {
-        padding: 2px 16px;
-      }
-
-      /* Modal Footer */
-      .modal-footer {
-        padding: 2px 16px;
-        background-color: #5cb85c;
-        color: white;
-      }
-
-      /* Modal Content */
-      .modal-content {
-        position: relative;
-        background-color: #fefefe;
-        margin: auto;
-        padding: 0;
-        border: 1px solid #888;
-        width: 80%;
-        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2),
-          0 6px 20px 0 rgba(0, 0, 0, 0.19);
-        animation-name: animatetop;
-        animation-duration: 0.4s;
-      }
-
-      /* Add Animation */
-      @keyframes animatetop {
-        from {
-          top: -300px;
-          opacity: 0;
-        }
-
-        to {
-          top: 0;
-          opacity: 1;
-        }
-      }
-
-      /* The Modal (background) */
-      .modal {
-        display: none;
-        /* Hidden by default */
-        position: fixed;
-        /* Stay in place */
-        z-index: 1;
-        /* Sit on top */
-        left: 0;
+      to {
         top: 0;
-        width: 100%;
-        /* Full width */
-        height: 100%;
-        /* Full height */
-        overflow: auto;
-        /* Enable scroll if needed */
-        background-color: rgb(0, 0, 0);
-        /* Fallback color */
-        background-color: rgba(0, 0, 0, 0.4);
-        /* Black w/ opacity */
+        opacity: 1;
       }
+    }
 
-      /* Modal Content/Box */
-      .modal-content {
-        background-color: #fefefe;
-        margin: 15% auto;
-        /* 15% from the top and centered */
-        padding: 20px;
-        border: 1px solid #888;
-        width: 80%;
-        /* Could be more or less, depending on screen size */
-      }
+    /* The Modal (background) */
+    .modal {
+      display: none;
+      /* Hidden by default */
+      position: fixed;
+      /* Stay in place */
+      z-index: 1;
+      /* Sit on top */
+      left: 0;
+      top: 0;
+      width: 100%;
+      /* Full width */
+      height: 100%;
+      /* Full height */
+      overflow: auto;
+      /* Enable scroll if needed */
+      background-color: rgb(0, 0, 0);
+      /* Fallback color */
+      background-color: rgba(0, 0, 0, 0.4);
+      /* Black w/ opacity */
+    }
 
-      /* The Close Button */
-      .close {
-        color: #aaa;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
-      }
+    /* Modal Content/Box */
+    .modal-content {
+      background-color: #fefefe;
+      margin: 15% auto;
+      /* 15% from the top and centered */
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      /* Could be more or less, depending on screen size */
+    }
 
-      .close:hover,
-      .close:focus {
-        color: black;
-        text-decoration: none;
-        cursor: pointer;
-      }
-    </style>
+    /* The Close Button */
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Google Fonts Link For Icons -->
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0"
-    />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@48,400,1,0"
-    />
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+  </style>
 
-    <link rel="stylesheet"
-    href="https://unpkg.com/boxicons@latest/css/boxicons.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Google Fonts Link For Icons -->
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@48,400,1,0" />
 
-  </head>
+  <link rel="stylesheet" href="https://unpkg.com/boxicons@latest/css/boxicons.min.css">
 
-  <body>
-    <div class = "consent" id="consent">
-        <header>
-            <i class="bx bx-comment-error"></i>
-            <h2>Informed Consent</h2>
-        </header>
-        <div class="consent-statement">
-            <p>
-                Please read the statements below and tick the final box to confirm you have read and understood the statements and upon doing so agree to participate in the project.
-            </p>
-            <br><br>
-            <h3><input type="checkbox" class = "consent-check" id="consent-check" autocomplete="off"> By checking this checkbox, I confirm that: <br></h3>
-        </div>
+</head>
 
-        <div class="consent-data">
-        <ul>
-            <br>
-            <li> I am 18 years of age or over. </li>
-            <br>
-            <li>That the research project “Perceived humanness and user satisfaction of word-by-word system response delay” has been explained to me. I have had the opportunity to ask questions about the project and have had these answered satisfactorily. I had enough time to consider whether to participate.
-            </li>
-            <br>
-            <li>I consent to the material I contribute being used to generate insights for the research project “Perceived humanness and user satisfaction of word-by-word system response delay”.
-            </li>
-            <br>
-            <li>I understand that my participation in this research is voluntary and that I may withdraw from the study at any time without providing a reason, and that if I withdraw any personal data already collected from me will be erased.  
-            </li>
-            <br>
-            <li>I consent to allow the fully anonymized data to be used in future publications and other scholarly means of disseminating the findings from the research project.
-            </li>
-            <br>
-            </p>
-        </div>
-        <div class="button">
-            <button class ="button" onclick="checkConsent()">Accept</button>
-        </div>
-    </div>
-    <div class="demographic" id="demographic">
-      <header>
-        <h2>Demographic Questionnaire</h2>
-        <br>
-      </header>
-      <div class="demographic-data">
-        <br>
-        <p>You are participant number <strong>{{participant_number}}</strong></p>
-        <br>
-        <p>
-          Please fill this form below below before starting this experiment.
-        </p>
-        <br>
-        <button onclick="redirectToDemographicForm()">Go to form</button>
-        <br>
-        <br>
-        <p><input type="checkbox" class = "form-check" id="consent-check" autocomplete="off"> I have filled in the form and I am ready to start the experiment.</p>
-        <br>
-        <button onclick="startExperiment()">Start experiment</button>
-      </div>
-      </div>
-    </div>
-    <div class="participant-number" id="participant">
-      <p>You are participant number <strong>{{participant_number}}</strong></p>
+<body>
+  <div class="consent" id="consent">
+    <header>
+      <i class="bx bx-comment-error"></i>
+      <h2>Informed Consent</h2>
+    </header>
+    <div class="consent-statement">
       <p>
-        Please use the number and reference it in the forms you will fill out :)
+        Thanks for your interest in participating in this study. This is a student research study. Please read the statements below carefully before you decide whether or not to participate. If you have any questions, feel free to ask the researcher.
+        If you tick the final box to confirm you have read and understood the statements
+        and upon doing so agree to participate in the project.
       </p>
-      <p style="margin-top: 15px">
-        By clicking on the button below you are redirected to the form! There
-        are two forms in total and before doing them, please chat with the bot
-        for a few minutes before you do each form, so you can do a good
-        assessment (open the bot by clicking the button in the bottom right
-        corner).
+      <p>
+        <strong>Purpose of the study:</strong>
+        This study investigates whether chatbots with different parameter settings have different perceived humanness. 
+        It will take about <strong>10 mins</strong>.
       </p>
-      <button onclick="redirectToForm()">Redirect to Google Form</button>
+      <br><br>
+      <h3><input type="checkbox" class="consent-check" id="consent-check" autocomplete="off"> By checking this checkbox,
+        I confirm that: <br></h3>
     </div>
 
-    <button class="chatbot-toggler">
-      <span class="material-symbols-rounded">mode_comment</span>
-      <span class="material-symbols-outlined">close</span>
-    </button>
-    <div class="chatbot">
-      <header>
-        <h2>Restaurant Finder</h2>
-        <span class="close-btn material-symbols-outlined">close</span>
-      </header>
-      <ul class="chatbox">
-        <li class="chat incoming">
-          <span class="material-symbols-outlined">smart_toy</span>
-          <p>{{first_message}}</p>
+    <div class="consent-data">
+      <ul>
+        <br>
+        <li> I am 18 years of age or over. </li>
+        <br>
+        <li>That the research project “Perceived humanness and user satisfaction of word-by-word system response delay”
+          has been explained to me. I have had the opportunity to ask questions about the project and have had these
+          answered satisfactorily. I had enough time to consider whether to participate.
         </li>
-      </ul>
-      <div class="chat-input">
-        <textarea
-          placeholder="Enter a message..."
-          spellcheck="false"
-          required
-        ></textarea>
-        <span id="send-btn" class="material-symbols-rounded">send</span>
-      </div>
-    </div>
-
-    <!-- The Modal -->
-    <div id="myModal" class="modal">
-      <!-- Modal content -->
-      <div class="modal-content">
-        <span class="close">&times;</span>
-        <p>
-          Now, please chat with the bot again and click on the Form Button once
-          you are finished. The way the bot behaves has changed slightly.
+        <br>
+        <li>I consent to the material I contribute being used to generate insights for the research project “Perceived
+          humanness and user satisfaction of word-by-word system response delay”.
+        </li>
+        <br>
+        <li>I understand that my participation in this research is voluntary and that I may withdraw from the study at
+          any time without providing a reason, and that if I withdraw any personal data already collected from me will
+          be erased.
+        </li>
+        <br>
+        <li>I consent to allow the fully anonymized data to be used in future publications and other scholarly means of
+          disseminating the findings from the research project.
+        </li>
+        <br>
         </p>
-        <p>Close when you filled out the form</p>
-      </div>
     </div>
-  </body>
-  <script src="https://apis.google.com/js/api.js" async defer></script>
-  <script>
-    const chatbotToggler = document.querySelector(".chatbot-toggler");
-    const closeBtn = document.querySelector(".close-btn");
-    const chatbox = document.querySelector(".chatbox");
-    const chatInput = document.querySelector(".chat-input textarea");
-    const sendChatBtn = document.querySelector(".chat-input span");
-    var participantsForm = document.getElementById("participant")
-    var demographicForm = document.getElementById("demographic")
-    let index = 0;
-    let userMessage = null; // Variable to store user's message
-    let hasconsent = false;    
-    const inputInitHeight = chatInput.scrollHeight;
+    <div class="button">
+      <button class="button" onclick="checkConsent()">Accept</button>
+    </div>
+  </div>
+  <div class="demographic" id="demographic">
+    <header>
+      <h2>Demographic Questionnaire</h2>
+      <br>
+    </header>
+    <div class="demographic-data">
+      <br>
+      <p>You are participant number <strong>{{participant_number}}</strong></p>
+      <br>
+      <p>
+        Please fill this form below below before starting this experiment.
+      </p>
+      <br>
+      <button onclick="redirectToDemographicForm()">Go to form</button>
+      <br>
+      <br>
+      <p><input type="checkbox" class="form-check" id="consent-check" autocomplete="off"> I have filled in the form and
+        I am ready to start the experiment.</p>
+      <br>
+      <button onclick="startExperiment()">Start experiment</button>
+    </div>
+  </div>
+  </div>
+  <div class="participant-number" id="participant">
+    <p>You are participant number <strong>{{participant_number}}</strong></p>
+    <p>
+      Please use the number and reference it in the forms you will fill out :)
+    </p>
+    <p style="margin-top: 15px">
+      By clicking on the button below you are redirected to the form! There
+      are two forms in total and before doing them, please chat with the bot
+      and try to get a restaurant recommendation (for example for a restaurant that serves cheap italian food in the
+      south), so you can do a good
+      assessment
+    </p>
+    <p>(open the bot by clicking the button in the bottom right
+      corner).</p>
+    <button onclick="redirectToForm()">Redirect to Google Form</button>
+  </div>
 
-    var participant_number = {{participant_number}};
+  <button class="chatbot-toggler">
+    <span class="material-symbols-rounded">mode_comment</span>
+    <span class="material-symbols-outlined">close</span>
+  </button>
+  <div class="chatbot">
+    <header>
+      <h2>Restaurant Finder</h2>
+      <span class="close-btn material-symbols-outlined">close</span>
+    </header>
+    <ul class="chatbox">
+      <li class="chat incoming">
+        <span class="material-symbols-outlined">smart_toy</span>
+        <p>{{first_message}}</p>
+      </li>
+    </ul>
+    <div class="chat-input">
+      <textarea placeholder="Enter a message..." spellcheck="false" required></textarea>
+      <span id="send-btn" class="material-symbols-rounded">send</span>
+    </div>
+  </div>
+
+  <!-- The Modal -->
+  <div id="myModal" class="modal">
+    <!-- Modal content -->
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <p>
+        Now, please chat with the bot again and click on the Form Button once
+        you are finished. The way the bot behaves has changed slightly.
+      </p>
+      <p>Close when you filled out the form</p>
+    </div>
+  </div>
+</body>
+<script src="https://apis.google.com/js/api.js" async defer></script>
+<script>
+  const chatbotToggler = document.querySelector(".chatbot-toggler");
+  const closeBtn = document.querySelector(".close-btn");
+  const chatbox = document.querySelector(".chatbox");
+  const chatInput = document.querySelector(".chat-input textarea");
+  const sendChatBtn = document.querySelector(".chat-input span");
+  var participantsForm = document.getElementById("participant")
+  var demographicForm = document.getElementById("demographic")
+  let index = 0;
+  let userMessage = null; // Variable to store user's message
+  let hasconsent = false;
+  const inputInitHeight = chatInput.scrollHeight;
+
+  var participant_number = {{ participant_number }};
 
 
-    var counter_forms_completed = 0;
+  var counter_forms_completed = 0;
 
-    var word_delay = {{ word_delay| tojson}};
-    console.log(word_delay);
+  var word_delay = {{ word_delay| tojson}};
+  console.log(word_delay);
 
 
 
-    var modal = document.getElementById("myModal");
+  var modal = document.getElementById("myModal");
 
-    // Get the <span> element that closes the modal
-    var span = document.getElementsByClassName("close")[0];
-    // When the user clicks on <span> (x), close the modal
-    span.onclick = function () {
-        modal.style.display = "none";
+  // Get the <span> element that closes the modal
+  var span = document.getElementsByClassName("close")[0];
+  // When the user clicks on <span> (x), close the modal
+  span.onclick = function () {
+    modal.style.display = "none";
+  }
+
+  // When the user clicks anywhere outside of the modal, close it
+  window.onclick = function (event) {
+    if (event.target == modal) {
+      modal.style.display = "none";
+    }
+  }
+
+
+
+  async function redirectToForm() {
+    modal.style.display = "block";
+
+    document.body.classList.remove("show-chatbot");
+
+    restartDialog();
+
+
+
+    if (word_delay) {
+      url = "https://docs.google.com/forms/d/e/1FAIpQLSdb36ejGjH4mbeCXPszdkZymp_5_oNn8EdD9hpEdzmHEcxR4Q/viewform?usp=sf_link";
+    }
+    else {
+      url = "https://docs.google.com/forms/d/e/1FAIpQLSebthffSQ7-puW_DOi-FkeA4ERNaK-FsUjjf2L342-_TVRORw/viewform?usp=sf_link";
     }
 
-    // When the user clicks anywhere outside of the modal, close it
-    window.onclick = function (event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
-    }
+    window.open(url, '_blank');
 
+    word_delay = !word_delay;
 
+    counter_forms_completed++;
 
-    async function redirectToForm() {
-        modal.style.display = "block";
-
-        document.body.classList.remove("show-chatbot");
-
-        restartDialog();
-
-
-
-        if(word_delay){
-            url = "https://docs.google.com/forms/d/e/1FAIpQLSdb36ejGjH4mbeCXPszdkZymp_5_oNn8EdD9hpEdzmHEcxR4Q/viewform?usp=sf_link";
-        }
-        else{
-            url = "https://docs.google.com/forms/d/e/1FAIpQLSebthffSQ7-puW_DOi-FkeA4ERNaK-FsUjjf2L342-_TVRORw/viewform?usp=sf_link";
-        }
-
-        window.open(url, '_blank');
-
-        word_delay = !word_delay;
-
-        counter_forms_completed ++;
-
-        if (counter_forms_completed == 2){
-            await completedForms();
-
-        }
-    }
-
-    async function redirectToDemographicForm(){
-      url = "https://docs.google.com/forms/d/e/1FAIpQLSfLx0LbK9yDifqd3a_cmJKrPf8pbVoOFvJPljc9g8T1BsjMTQ/viewform?usp=sf_link"
-      window.open(url, '_blank');
-    }
-
-    async function completedForms(){
-
-        const response = await fetch("{{ url_for('forms_completed') }}", {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                "participant_number": participant_number,
-                "word_delay" : !word_delay
-            }),
-        });
-
-        window.location = "/thanks";
+    if (counter_forms_completed == 2) {
+      await completedForms();
 
     }
+  }
 
+  async function redirectToDemographicForm() {
+    url = "https://docs.google.com/forms/d/e/1FAIpQLSfLx0LbK9yDifqd3a_cmJKrPf8pbVoOFvJPljc9g8T1BsjMTQ/viewform?usp=sf_link"
+    window.open(url, '_blank');
+  }
 
-    async function restartDialog() {
-        document.querySelector("textarea").disabled = false;
+  async function completedForms() {
 
-
-        var child = chatbox.lastElementChild;
-        while (child) {
-            chatbox.removeChild(child);
-            child = chatbox.lastElementChild;
-        }
-        chatbox.scrollTo(0, chatbox.scrollHeight);
-
-        const response = await fetch("{{ url_for('restart_dialog') }}", {
-            method: 'GET',
-        });
-        data = await response.json();
-
-        await setTimeout(() => {
-            const incomingChatLi = createChatLi("Thinking...", "incoming");
-            chatbox.appendChild(incomingChatLi);
-            chatbox.scrollTo(0, chatbox.scrollHeight);
-
-            const messageElement = incomingChatLi.querySelector("p");
-            messageElement.innerHTML = "";
-
-            typeWriter(messageElement, data["response"]);
-        }, 600);
-
-
-    }
-
-
-    function dialogFinished() {
-        const buttonWrapper = document.createElement("div");
-        const restartButton = document.createElement("button");
-        restartButton.onclick = restartDialog;
-
-        restartButton.classList.add("restartButton");
-        buttonWrapper.classList.add("restartButtonWrapper");
-
-        document.querySelector("textarea").disabled = true;
-
-        restartButton.innerHTML = "Restart";
-        buttonWrapper.appendChild(restartButton);
-        chatbox.appendChild(buttonWrapper);
-        chatbox.scrollTo(0, chatbox.scrollHeight);
-
-    }
-
-
-    async function typeWriter(element, message) {
-        if (word_delay) {
-            current_char = message.charAt(index);
-            var timeout;
-
-            chatbox.scrollTo(0, chatbox.scrollHeight);
-
-
-            if (current_char == " ") timeout = 50;
-            else if (current_char == "." || current_char == "?" || current_char == "!") timeout = 400
-            else if (current_char == ",") timeout = 200;
-            else timeout = 25;
-
-            setTimeout(() => {
-                element.textContent += current_char;
-                index++;
-                if (index < message.length) typeWriter(element, message);
-
-            }, timeout)
-
-        } else {
-            element.textContent = message;
-        }
-
-
-
-    }
-
-    const createChatLi = (message, className) => {
-        // Create a chat <li> element with passed message and className
-        const chatLi = document.createElement("li");
-        chatLi.classList.add("chat", `${className}`);
-        let chatContent = className === "outgoing" ? `<p></p>` : `<span class="material-symbols-outlined">smart_toy</span><p></p>`;
-        chatLi.innerHTML = chatContent;
-        chatLi.querySelector("p").textContent = message;
-        return chatLi; // return chat <li> element
-    }
-
-    async function generateResponse(chatElement) {
-        const messageElement = chatElement.querySelector("p");
-        index = 0;
-        const response = await fetch("{{ url_for('api_return_response') }}", {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                "utterance": userMessage,
-            }),
-        });
-
-
-        if (response.ok) {
-            messageElement.textContent = "";
-            data = await response.json();
-            await typeWriter(messageElement, data["response"]);
-            console.log(data);
-            if (data["dialog_finished"]) {
-                dialogFinished();
-            }
-        }
-        else {
-            messageElement.classList.add("error");
-            messageElement.textContent = "Oops! Something went wrong. Please try again.";
-            dialogFinished();
-        }
-
-        chatbox.scrollTo(0, chatbox.scrollHeight)
-
-    }
-
-    const handleChat = () => {
-        userMessage = chatInput.value.trim(); // Get user entered message and remove extra whitespace
-        if (!userMessage) return;
-
-        // Clear the input textarea and set its height to default
-        chatInput.value = "";
-        chatInput.style.height = `${inputInitHeight}px`;
-
-        // Append the user's message to the chatbox
-        chatbox.appendChild(createChatLi(userMessage, "outgoing"));
-        chatbox.scrollTo(0, chatbox.scrollHeight);
-
-        setTimeout(() => {
-            // Display "Thinking..." message while waiting for the response
-            const incomingChatLi = createChatLi("Thinking...", "incoming");
-            chatbox.appendChild(incomingChatLi);
-            chatbox.scrollTo(0, chatbox.scrollHeight);
-            generateResponse(incomingChatLi);
-        }, 600);
-    }
-
-    chatInput.addEventListener("input", () => {
-        // Adjust the height of the input textarea based on its content
-        chatInput.style.height = `${inputInitHeight}px`;
-        chatInput.style.height = `${chatInput.scrollHeight}px`;
+    const response = await fetch("{{ url_for('forms_completed') }}", {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        "participant_number": participant_number,
+        "word_delay": !word_delay
+      }),
     });
 
-    chatInput.addEventListener("keydown", (e) => {
-        // If Enter key is pressed without Shift key and the window
-        // width is greater than 800px, handle the chat
-        if (e.key === "Enter" && !e.shiftKey && window.innerWidth > 800) {
-            e.preventDefault();
-            handleChat();
-        }
+    window.location = "/thanks";
+
+  }
+
+
+  async function restartDialog() {
+    document.querySelector("textarea").disabled = false;
+
+
+    var child = chatbox.lastElementChild;
+    while (child) {
+      chatbox.removeChild(child);
+      child = chatbox.lastElementChild;
+    }
+    chatbox.scrollTo(0, chatbox.scrollHeight);
+
+    const response = await fetch("{{ url_for('restart_dialog') }}", {
+      method: 'GET',
+    });
+    data = await response.json();
+
+    await setTimeout(() => {
+      const incomingChatLi = createChatLi("Thinking...", "incoming");
+      chatbox.appendChild(incomingChatLi);
+      chatbox.scrollTo(0, chatbox.scrollHeight);
+
+      const messageElement = incomingChatLi.querySelector("p");
+      messageElement.innerHTML = "";
+
+      typeWriter(messageElement, data["response"]);
+    }, 600);
+
+
+  }
+
+
+  function dialogFinished() {
+    const buttonWrapper = document.createElement("div");
+    const restartButton = document.createElement("button");
+    restartButton.onclick = restartDialog;
+
+    restartButton.classList.add("restartButton");
+    buttonWrapper.classList.add("restartButtonWrapper");
+
+    document.querySelector("textarea").disabled = true;
+
+    restartButton.innerHTML = "Restart";
+    buttonWrapper.appendChild(restartButton);
+    chatbox.appendChild(buttonWrapper);
+    chatbox.scrollTo(0, chatbox.scrollHeight);
+
+  }
+
+
+  async function typeWriter(element, message) {
+    if (word_delay) {
+      current_char = message.charAt(index);
+      var timeout;
+
+      chatbox.scrollTo(0, chatbox.scrollHeight);
+
+
+      if (current_char == " ") timeout = 50;
+      else if (current_char == "." || current_char == "?" || current_char == "!") timeout = 400
+      else if (current_char == ",") timeout = 200;
+      else timeout = 25;
+
+      setTimeout(() => {
+        element.textContent += current_char;
+        index++;
+        if (index < message.length) typeWriter(element, message);
+
+      }, timeout)
+
+    } else {
+      element.textContent = message;
+    }
+
+
+
+  }
+
+  const createChatLi = (message, className) => {
+    // Create a chat <li> element with passed message and className
+    const chatLi = document.createElement("li");
+    chatLi.classList.add("chat", `${className}`);
+    let chatContent = className === "outgoing" ? `<p></p>` : `<span class="material-symbols-outlined">smart_toy</span><p></p>`;
+    chatLi.innerHTML = chatContent;
+    chatLi.querySelector("p").textContent = message;
+    return chatLi; // return chat <li> element
+  }
+
+  async function generateResponse(chatElement) {
+    const messageElement = chatElement.querySelector("p");
+    index = 0;
+    const response = await fetch("{{ url_for('api_return_response') }}", {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        "utterance": userMessage,
+      }),
     });
 
 
-    function checkConsent(){
-        if(document.querySelector(".consent-check").checked){
-            var consentForm = document.getElementById("consent")
-            consent.style.display = "none";
-            demographicForm.style.visibility = "visible";
-        }
-    }
-
-    function startExperiment()
-    {
-      if(document.querySelector(".form-check").checked){
-            demographicForm.style.visibility = "hidden";
-            chatbotToggler.disabled = false;
-            chatbotToggler.style.visibility = "visible";
-            participantsForm.display = "block";
-            participantsForm.style.visibility = "visible";          
-        }
+    if (response.ok) {
+      messageElement.textContent = "";
+      data = await response.json();
+      await typeWriter(messageElement, data["response"]);
+      console.log(data);
+      if (data["dialog_finished"]) {
+        dialogFinished();
       }
-    demographicForm.style.visibility = "hidden";
-    participantsForm.style.visibility = "hidden";
-    chatbotToggler.style.visibility = "hidden";
+    }
+    else {
+      messageElement.classList.add("error");
+      messageElement.textContent = "Oops! Something went wrong. Please try again.";
+      dialogFinished();
+    }
 
-    sendChatBtn.addEventListener("click", handleChat);
-    closeBtn.addEventListener("click", () => document.body.classList.remove("show-chatbot"));
-    chatbotToggler.addEventListener("click", () => document.body.classList.toggle("show-chatbot"));
-  </script>
+    chatbox.scrollTo(0, chatbox.scrollHeight)
+
+  }
+
+  const handleChat = () => {
+    userMessage = chatInput.value.trim(); // Get user entered message and remove extra whitespace
+    if (!userMessage) return;
+
+    // Clear the input textarea and set its height to default
+    chatInput.value = "";
+    chatInput.style.height = `${inputInitHeight}px`;
+
+    // Append the user's message to the chatbox
+    chatbox.appendChild(createChatLi(userMessage, "outgoing"));
+    chatbox.scrollTo(0, chatbox.scrollHeight);
+
+    setTimeout(() => {
+      // Display "Thinking..." message while waiting for the response
+      const incomingChatLi = createChatLi("Thinking...", "incoming");
+      chatbox.appendChild(incomingChatLi);
+      chatbox.scrollTo(0, chatbox.scrollHeight);
+      generateResponse(incomingChatLi);
+    }, 600);
+  }
+
+  chatInput.addEventListener("input", () => {
+    // Adjust the height of the input textarea based on its content
+    chatInput.style.height = `${inputInitHeight}px`;
+    chatInput.style.height = `${chatInput.scrollHeight}px`;
+  });
+
+  chatInput.addEventListener("keydown", (e) => {
+    // If Enter key is pressed without Shift key and the window
+    // width is greater than 800px, handle the chat
+    if (e.key === "Enter" && !e.shiftKey && window.innerWidth > 800) {
+      e.preventDefault();
+      handleChat();
+    }
+  });
+
+
+  function checkConsent() {
+    if (document.querySelector(".consent-check").checked) {
+      var consentForm = document.getElementById("consent")
+      consent.style.display = "none";
+      demographicForm.style.display = "block";
+    }
+  }
+
+  function startExperiment() {
+    if (document.querySelector(".form-check").checked) {
+      demographicForm.style.display = "none";
+
+      chatbotToggler.disabled = false;
+      chatbotToggler.style.visibility = "visible";
+      participantsForm.style.display = "block";
+    }
+  }
+  demographicForm.style.display = "none";
+  participantsForm.style.display = "none";
+  chatbotToggler.style.visibility = "hidden";
+
+  sendChatBtn.addEventListener("click", handleChat);
+  closeBtn.addEventListener("click", () => document.body.classList.remove("show-chatbot"));
+  chatbotToggler.addEventListener("click", () => document.body.classList.toggle("show-chatbot"));
+</script>
+
 </html>
